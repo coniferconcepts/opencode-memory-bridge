@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci || npm install
+
+    - name: Validate source config JSON
+      run: |
+        cat config/opencode.json | python3 -m json.tool > /dev/null && echo "✅ Source config is valid JSON"
+
+    - name: Test build script
+      run: |
+        node scripts/build-config.js --dry-run 2>&1 | grep -E "(✅|✓|Build successful)" && echo "✅ Build script works"
+      continue-on-error: true
+
+    - name: Check agent files exist
+      run: |
+        AGENT_COUNT=$(ls universal/prompts/agents/*.txt 2>/dev/null | wc -l)
+        echo "Found $AGENT_COUNT agent files"
+        if [ "$AGENT_COUNT" -lt 24 ]; then
+          echo "❌ Expected at least 24 agent files"
+          exit 1
+        fi
+        echo "✅ Agent files present"
+
+    - name: Verify prompt file references
+      run: |
+        MISSING=0
+        for file in universal/prompts/agents/*.txt; do
+          if grep -q "{file:" "$file" 2>/dev/null; then
+            # Check if referenced files exist
+            for ref in $(grep -oP '{file:\K[^}]+' "$file" 2>/dev/null || true); do
+              # Handle both absolute and relative paths
+              if [[ "$ref" == /* ]]; then
+                # Absolute path - check if exists (this won't work in CI without full setup)
+                continue
+              else
+                # Relative path - check in universal/prompts/
+                if [ ! -f "universal/prompts/$ref" ] && [ ! -f "universal/prompts/agents/$ref" ]; then
+                  echo "❌ Missing reference: $ref in $file"
+                  MISSING=$((MISSING + 1))
+                fi
+              fi
+            done
+          fi
+        done
+        if [ "$MISSING" -gt 0 ]; then
+          echo "❌ Found $MISSING missing references"
+          exit 1
+        fi
+        echo "✅ All file references valid"
+
+    - name: Check documentation
+      run: |
+        for file in README.md BUILD_SYSTEM.md LICENSE CHANGELOG.md; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          fi
+        done
+        echo "✅ Core documentation present"
+
+    - name: Lint shell scripts (if shellcheck available)
+      run: |
+        if command -v shellcheck &> /dev/null; then
+          for script in scripts/*.sh *.sh; do
+            if [ -f "$script" ]; then
+              shellcheck "$script" || echo "⚠️  Shellcheck warnings in $script"
+            fi
+          done
+        else
+          echo "ℹ️  Shellcheck not available, skipping shell script linting"
+        fi
+      continue-on-error: true
+
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check markdown links
+      uses: lycheeverse/lychee-action@v1
+      with:
+        args: --timeout 30 README.md BUILD_SYSTEM.md docs/*.md
+      continue-on-error: true
+
+    - name: Verify all docs referenced in README exist
+      run: |
+        # Extract markdown links from README and check if files exist
+        grep -oP '\[.*?\]\(\K[^)]+' README.md | while read -r link; do
+          # Skip external links and anchors
+          if [[ "$link" == http* ]] || [[ "$link" == \#* ]]; then
+            continue
+          fi
+          # Remove .md extension if present for comparison
+          clean_link="${link%.md}"
+          if [ ! -f "$link" ] && [ ! -f "$clean_link.md" ]; then
+            echo "⚠️  README references missing file: $link"
+          fi
+        done
+        echo "✅ Documentation check complete"
+      continue-on-error: true
