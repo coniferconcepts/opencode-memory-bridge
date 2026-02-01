@@ -1,0 +1,94 @@
+@solo-orchestrator I need to improve and optimize our OpenCode global configuration. We just got it working with a resolved/inlined config, but we need to verify everything, clean up, and optimize.
+
+## Current Situation
+- OpenCode is working with a 121KB inlined configuration (24 agents)
+- All prompt files were converted to JSON-safe format with escaped characters
+- There are backup files (.backup, .original) in the prompts directory that need cleanup
+- The original config with {file:...} references had JSON escaping issues
+- We need to verify everything works and optimize the setup
+
+## Your Task
+
+Execute the improvement plan in phases:
+
+### Phase 1: VERIFY THE SETUP
+1. Test that OpenCode loads all 24 agents:
+   - List all agents in the config
+   - Verify each agent is accessible
+   - Check agent counts match expected (25 total including router)
+
+2. Test key functionality:
+   - Test @tool-utility can read files
+   - Test @planner can create a simple plan
+   - Test @router (if available) or verify routing metadata exists
+   - Test a specialist agent like @legend-state-expert
+
+3. Verify Context7 MCP:
+   - Check if Context7 integration is working
+   - Test the @context7-super-expert if available
+
+### Phase 2: CLEANUP
+Clean up all temporary and backup files:
+
+1. Remove backup files from prompts directory:
+   ```bash
+   find ~/.opencode/universal/prompts -name "*.backup" -delete
+   find ~/.opencode/universal/prompts -name "*.original" -delete
+   ```
+
+2. List what backup directories exist in ~/.config/ and clean up old ones (keep the most recent if needed)
+
+3. Verify no unnecessary files remain in the prompts directory
+
+### Phase 3: OPTIMIZATION
+Test if we can re-enable file references:
+
+1. Create a test: Try using {file:...} references with the properly escaped files
+2. If it works, we can convert back to file references to reduce config size
+3. If not, keep the inlined version and optimize it:
+   - Check for duplicate content across agents
+   - See if we can reduce the 121KB size
+   - Ensure all content is necessary
+
+### Phase 4: DOCUMENTATION
+Update documentation:
+
+1. Create a summary of what was fixed:
+   - The JSON escaping issue with file references
+   - The solution (inlining prompts)
+   - Current working state
+
+2. Update README if needed with:
+   - Final file structure
+   - How the configuration works
+   - Any known limitations
+
+3. Document the cleanup performed
+
+## Expected Outcomes
+
+After your work, we should have:
+- ✅ Verified working configuration with all 24 agents
+- ✅ Clean prompts directory (no .backup/.original files)
+- ✅ Optimized config (either with working file references or efficient inlined version)
+- ✅ Updated documentation
+- ✅ Confirmation everything works
+
+## Important Notes
+
+- The config file is at: ~/.config/opencode/opencode.json
+- The prompts are at: ~/.opencode/universal/prompts/
+- The symlink points: ~/.opencode -> ~/CODE/opencode-global-config
+- Keep backups of critical files before making changes
+- Test each change to ensure OpenCode still works
+
+## Deliverables
+
+Provide a comprehensive report including:
+1. Which agents were tested and their status
+2. What cleanup was performed
+3. Whether file references work or not
+4. Final config size and optimization results
+5. Any issues found and how they were resolved
+
+Start with Phase 1 verification, then proceed through each phase systematically.

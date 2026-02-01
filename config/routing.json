@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "extends": "~/.config/opencode/opencode.json",
+  "agent": {
+    "router": {
+      "model": "opencode/gpt-5-nano",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/router.txt}",
+      "description": "Intelligent routing agent - selects optimal specialists for tasks",
+      "mode": "subagent",
+      "temperature": 0.1,
+      "maxTokens": 500
+    }
+  },
+  "routing": {
+    "enabled": true,
+    "cacheEnabled": true,
+    "autoRouting": true,
+    "confidenceThreshold": 0.70,
+    "maxAgentsPerRequest": 5,
+    "metadataSource": "~/.opencode/config/agent-metadata.json",
+    "cache": {
+      "ttl": 300,
+      "maxSize": 1000,
+      "strategy": "lru"
+    },
+    "fallback": {
+      "enabled": true,
+      "defaultAgent": "solo-orchestrator",
+      "confidenceThreshold": 0.50
+    }
+  },
+  "intelligence": {
+    "feedbackLoop": true,
+    "analyticsEnabled": true,
+    "autoImprove": true,
+    "routingStats": "~/.opencode/.cache/routing-stats.json"
+  }
+}

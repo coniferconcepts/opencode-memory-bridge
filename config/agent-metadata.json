@@ -1,0 +1,550 @@
+{
+  "$schema": "https://opencode.ai/agent-metadata.json",
+  "version": "2.1.0",
+  "lastUpdated": "2026-02-01",
+  "agents": {
+    "legend-state-expert": {
+      "id": "legend-state-expert",
+      "name": "Legend State Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["observable-state", "syncedcrud", "state-persistence", "offline-sync", "field-mapping"],
+        "secondary": ["reactivity-patterns", "computed-values", "state-normalization"],
+        "technologies": ["legend-state", "legend-app-state", "mmkv", "localstorage"],
+        "domains": ["frontend", "mobile", "state-management"]
+      },
+      "triggers": {
+        "keywords": ["legend", "state", "observable", "synced", "syncedcrud", "fieldid", "persistence", "mmkv", "offline", "reactivity", "use$"],
+        "patterns": [
+          "/legend.*state/i",
+          "/syncedcrud/i",
+          "/observable.*state/i",
+          "/fieldid.*mapping/i",
+          "/state.*persistence/i"
+        ],
+        "codeSignals": ["observable(", "syncedCrud(", "use$(", "configureSynced(", "@legendapp/state"]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["valibot-expert", "tamagui-expert", "cloudflare-expert"],
+        "requiredFor": ["api-integration"],
+        "optional": ["context7-super-expert"]
+      },
+      "constraints": {
+        "maxContextTokens": 8000,
+        "avgResponseTime": 3000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Set up syncedCrud for workouts with proper fieldId mapping",
+          "output": "Observable configuration with fieldId: 'workoutId' and persistence",
+          "agentsSelected": ["legend-state-expert"],
+          "confidence": 0.98
+        },
+        {
+          "input": "Create workout tracking feature with UI",
+          "output": "State layer + UI components",
+          "agentsSelected": ["legend-state-expert", "tamagui-expert", "valibot-expert"],
+          "confidence": 0.95
+        }
+      ],
+      "stats": {
+        "successRate": 0.94,
+        "avgUserRating": 4.7,
+        "usageCount": 892,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "valibot-expert": {
+      "id": "valibot-expert",
+      "name": "Valibot Schema Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["schema-validation", "type-inference", "pipe-transformations", "typescript-types"],
+        "secondary": ["form-validation", "api-contracts", "input-sanitization", "zod-migration"],
+        "technologies": ["valibot", "typescript", "zod", "trpc"],
+        "domains": ["backend", "frontend", "api-design", "forms"]
+      },
+      "triggers": {
+        "keywords": ["valibot", "schema", "validation", "validate", "pipe", "v.object", "v.string", "inferoutput", "safeparse", "zod", "yup"],
+        "patterns": [
+          "/valibot/i",
+          "/schema.*validation/i",
+          "/v\\.pipe/i",
+          "/v\\.object/i",
+          "/inferoutput/i",
+          "/safeparse/i",
+          "/zod.*migration/i"
+        ],
+        "codeSignals": ["import * as v from 'valibot'", "v.pipe(", "v.object(", "v.InferOutput<", "v.safeParse("]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["cloudflare-expert", "legend-state-expert"],
+        "requiredFor": ["api-validation", "form-handling"],
+        "optional": ["context7-super-expert"]
+      },
+      "constraints": {
+        "maxContextTokens": 6000,
+        "avgResponseTime": 2500,
+        "costPer1kTokens": 0.03,
+        "complexity": "medium"
+      },
+      "examples": [
+        {
+          "input": "Create validation schema for user registration",
+          "output": "Valibot schema with email, password, name validation",
+          "agentsSelected": ["valibot-expert"],
+          "confidence": 0.97
+        },
+        {
+          "input": "Set up tRPC procedures with input validation",
+          "output": "tRPC router with Valibot input schemas",
+          "agentsSelected": ["valibot-expert", "cloudflare-expert"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.96,
+        "avgUserRating": 4.8,
+        "usageCount": 1247,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "tamagui-expert": {
+      "id": "tamagui-expert",
+      "name": "Tamagui UI Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["ui-components", "design-tokens", "cross-platform", "theming"],
+        "secondary": ["responsive-design", "animations", "styled-components", "accessibility"],
+        "technologies": ["tamagui", "react-native", "react", "typescript"],
+        "domains": ["frontend", "mobile", "design-system"]
+      },
+      "triggers": {
+        "keywords": ["tamagui", "ui", "component", "styled", "tokens", "theme", "cross-platform", "universal", "$purple", "$space", "$size", "tailwind", "yoga", "stack", "yStack", "xStack"],
+        "patterns": [
+          "/tamagui/i",
+          "/ui.*component/i",
+          "/styled\\(/i",
+          "/\\$[a-z]+[0-9]/i",
+          "/cross.?platform/i",
+          "/universal.*component/i",
+          "/tailwind.*alternative/i"
+        ],
+        "codeSignals": ["from 'tamagui'", "styled(", "<Stack", "<YStack", "<XStack", "$bg=", "$p=", "$color="]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["legend-state-expert", "valibot-expert"],
+        "requiredFor": ["form-ui", "cross-platform-apps"],
+        "optional": ["frontend-designer"]
+      },
+      "constraints": {
+        "maxContextTokens": 7000,
+        "avgResponseTime": 2800,
+        "costPer1kTokens": 0.03,
+        "complexity": "medium"
+      },
+      "examples": [
+        {
+          "input": "Create a workout card component with proper tokens",
+          "output": "Tamagui Card component with $purple9, $space4, etc.",
+          "agentsSelected": ["tamagui-expert"],
+          "confidence": 0.96
+        },
+        {
+          "input": "Design responsive form layout",
+          "output": "Cross-platform form with validation and state",
+          "agentsSelected": ["tamagui-expert", "valibot-expert", "legend-state-expert"],
+          "confidence": 0.93
+        }
+      ],
+      "stats": {
+        "successRate": 0.92,
+        "avgUserRating": 4.6,
+        "usageCount": 756,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "cloudflare-expert": {
+      "id": "cloudflare-expert",
+      "name": "Cloudflare Platform Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["workers", "d1-database", "r2-storage", "kv-caching", "queues"],
+        "secondary": ["wrangler", "deployment", "edge-computing", "serverless"],
+        "technologies": ["cloudflare", "workers", "d1", "r2", "kv", "hono", "trpc"],
+        "domains": ["backend", "infrastructure", "api"]
+      },
+      "triggers": {
+        "keywords": ["cloudflare", "workers", "d1", "r2", "kv", "queue", "wrangler", "deploy", "edge", "hono", "trpc", "server"],
+        "patterns": [
+          "/cloudflare/i",
+          "/workers/i",
+          "/d1.*database/i",
+          "/r2.*storage/i",
+          "/wrangler/i",
+          "/hono.*worker/i",
+          "/trpc.*server/i"
+        ],
+        "codeSignals": ["import { Hono }", "new Hono()", "trpcServer(", "env.D1", "env.R2", "env.KV"]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["valibot-expert", "security-expert"],
+        "requiredFor": ["api-backend", "database-schema"],
+        "optional": ["context7-super-expert"]
+      },
+      "constraints": {
+        "maxContextTokens": 8000,
+        "avgResponseTime": 3500,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Set up tRPC on Cloudflare Workers with D1",
+          "output": "Hono + tRPC server with D1 integration",
+          "agentsSelected": ["cloudflare-expert", "valibot-expert"],
+          "confidence": 0.95
+        }
+      ],
+      "stats": {
+        "successRate": 0.91,
+        "avgUserRating": 4.5,
+        "usageCount": 623,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "security-expert": {
+      "id": "security-expert",
+      "name": "Security Patterns Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["security-audit", "auth-validation", "input-sanitization", "threat-detection"],
+        "secondary": ["vulnerability-scanning", "security-patterns", "anti-patterns"],
+        "technologies": ["security", "auth", "better-auth", "oauth", "jwt"],
+        "domains": ["security", "backend", "frontend"]
+      },
+      "triggers": {
+        "keywords": ["security", "auth", "authentication", "authorization", "vulnerability", "sanitize", "xss", "sql-injection", "better-auth", "oauth", "token"],
+        "patterns": [
+          "/security/i",
+          "/auth.*audit/i",
+          "/vulnerability/i",
+          "/sanitize/i",
+          "/xss/i",
+          "/injection/i",
+          "/better.?auth/i"
+        ],
+        "codeSignals": ["better-auth", "auth(", "session", "token", "password", "hash"]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["cloudflare-expert", "gpt5-security"],
+        "requiredFor": ["auth-changes", "security-reviews"],
+        "optional": []
+      },
+      "constraints": {
+        "maxContextTokens": 7000,
+        "avgResponseTime": 3000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Audit my tRPC procedures for security issues",
+          "output": "Security review with findings and fixes",
+          "agentsSelected": ["security-expert"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.93,
+        "avgUserRating": 4.7,
+        "usageCount": 445,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "context7-super-expert": {
+      "id": "context7-super-expert",
+      "name": "Context7 Documentation Expert",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["documentation-lookup", "best-practices", "official-docs", "pattern-validation"],
+        "secondary": ["version-specific-docs", "migration-guides", "api-reference"],
+        "technologies": ["context7", "mcp", "documentation"],
+        "domains": ["research", "documentation"]
+      },
+      "triggers": {
+        "keywords": ["context7", "documentation", "docs", "official", "best practices", "look up", "lookup", "reference", "guide", "how to", "migration"],
+        "patterns": [
+          "/context7/i",
+          "/documentation.*lookup/i",
+          "/best.*practice/i",
+          "/look.*up/i",
+          "/official.*doc/i",
+          "/migration.*guide/i"
+        ],
+        "codeSignals": ["use context7"]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["legend-state-expert", "valibot-expert", "tamagui-expert", "cloudflare-expert"],
+        "requiredFor": ["documentation-research"],
+        "optional": []
+      },
+      "constraints": {
+        "maxContextTokens": 6000,
+        "avgResponseTime": 4000,
+        "costPer1kTokens": 0.03,
+        "complexity": "low"
+      },
+      "examples": [
+        {
+          "input": "Look up Legend State v3 syncedCrud best practices",
+          "output": "Official documentation references and examples",
+          "agentsSelected": ["context7-super-expert"],
+          "confidence": 0.98
+        }
+      ],
+      "stats": {
+        "successRate": 0.95,
+        "avgUserRating": 4.8,
+        "usageCount": 334,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "code-reviewer": {
+      "id": "code-reviewer",
+      "name": "Code Review Orchestrator",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["code-review", "review-pipeline", "multi-phase-review"],
+        "secondary": ["security-audit", "quality-gates", "review-coordination"],
+        "technologies": ["review", "audit", "security"],
+        "domains": ["quality", "security"]
+      },
+      "triggers": {
+        "keywords": ["review", "code review", "audit", "check code", "review my code", "security review"],
+        "patterns": [
+          "/review.*code/i",
+          "/code.*review/i",
+          "/audit.*code/i",
+          "/check.*my/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["security-expert", "deep-reviewer", "fast-validator"],
+        "requiredFor": ["pre-commit", "deployment-gates"],
+        "optional": ["gpt5-security"]
+      },
+      "constraints": {
+        "maxContextTokens": 10000,
+        "avgResponseTime": 5000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Review my workout feature implementation",
+          "output": "Multi-phase review with security and quality checks",
+          "agentsSelected": ["code-reviewer"],
+          "confidence": 0.96
+        }
+      ],
+      "stats": {
+        "successRate": 0.92,
+        "avgUserRating": 4.6,
+        "usageCount": 567,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "planner": {
+      "id": "planner",
+      "name": "Implementation Planner",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["planning", "architecture", "task-decomposition", "implementation-plans"],
+        "secondary": ["blast-radius", "dependency-mapping", "parallel-execution"],
+        "technologies": ["planning", "architecture"],
+        "domains": ["planning", "architecture"]
+      },
+      "triggers": {
+        "keywords": ["plan", "planning", "implement", "implementation", "how to", "steps", "architecture", "design", "approach", "strategy"],
+        "patterns": [
+          "/plan.*implementation/i",
+          "/how.*implement/i",
+          "/design.*approach/i",
+          "/architecture.*for/i",
+          "/create.*plan/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["deep-reviewer", "solo-orchestrator"],
+        "requiredFor": ["complex-tasks", "multi-step-work"],
+        "optional": ["kimi-premium"]
+      },
+      "constraints": {
+        "maxContextTokens": 12000,
+        "avgResponseTime": 6000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Plan the implementation of workout tracking feature",
+          "output": "Detailed implementation plan with specialist assignments",
+          "agentsSelected": ["planner"],
+          "confidence": 0.95
+        }
+      ],
+      "stats": {
+        "successRate": 0.90,
+        "avgUserRating": 4.5,
+        "usageCount": 423,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "solo-orchestrator": {
+      "id": "solo-orchestrator",
+      "name": "Solo Developer Orchestrator",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["coordination", "delegation", "solo-dev", "fortress"],
+        "secondary": ["cross-domain", "specialist-coordination", "discussion-hub"],
+        "technologies": ["orchestration", "coordination"],
+        "domains": ["orchestration"]
+      },
+      "triggers": {
+        "keywords": ["help", "orchestrate", "coordinate", "manage", "supervise", "handle", "create", "build", "make", "setup", "implement"],
+        "patterns": [
+          "/help.*me/i",
+          "/create.*feature/i",
+          "/build.*app/i",
+          "/implement.*this/i",
+          "/setup.*project/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["tool-utility", "kimi-premium"],
+        "requiredFor": ["general-tasks", "cross-domain-work"],
+        "optional": ["deep-reviewer"]
+      },
+      "constraints": {
+        "maxContextTokens": 10000,
+        "avgResponseTime": 4000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Create a complete workout tracking app",
+          "output": "Coordinated multi-specialist execution",
+          "agentsSelected": ["solo-orchestrator"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.91,
+        "avgUserRating": 4.6,
+        "usageCount": 1234,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "deep-reviewer": {
+      "id": "deep-reviewer",
+      "name": "Deep Architecture Reviewer",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["deep-analysis", "architectural-synthesis", "cross-boundary"],
+        "secondary": ["logic-verification", "trade-off-analysis", "complex-systems"],
+        "technologies": ["architecture", "analysis"],
+        "domains": ["architecture", "quality"]
+      },
+      "triggers": {
+        "keywords": ["deep review", "architectural", "cross-boundary", "complex", "synthesis", "analyze deeply"],
+        "patterns": [
+          "/deep.*review/i",
+          "/architectural.*analysis/i",
+          "/cross.?boundary/i",
+          "/complex.*logic/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["code-reviewer", "planner"],
+        "requiredFor": ["architecture-review", "plan-validation"],
+        "optional": ["kimi-premium"]
+      },
+      "constraints": {
+        "maxContextTokens": 10000,
+        "avgResponseTime": 6000,
+        "costPer1kTokens": 0.03,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "Deep review of state management architecture",
+          "output": "Cross-boundary analysis with recommendations",
+          "agentsSelected": ["deep-reviewer"],
+          "confidence": 0.92
+        }
+      ],
+      "stats": {
+        "successRate": 0.88,
+        "avgUserRating": 4.5,
+        "usageCount": 312,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "tool-utility": {
+      "id": "tool-utility",
+      "name": "Tool Utility Executor",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["file-operations", "batch-processing", "reconnaissance"],
+        "secondary": ["mechanical-tasks", "data-gathering"],
+        "technologies": ["bash", "file-io"],
+        "domains": ["execution"]
+      },
+      "triggers": {
+        "keywords": ["read file", "write file", "edit file", "grep", "search", "find", "list", "batch"],
+        "patterns": [
+          "/read.*file/i",
+          "/write.*file/i",
+          "/edit.*file/i",
+          "/grep.*/i",
+          "/search.*for/i",
+          "/batch.*process/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": [],
+        "requiredFor": ["file-ops", "recon"],
+        "optional": []
+      },
+      "constraints": {
+        "maxContextTokens": 2000,
+        "avgResponseTime": 1000,
+        "costPer1kTokens": 0.01,
+        "complexity": "low"
+      },
+      "examples": [
+        {
+          "input": "Read files src/auth.ts and src/db.ts",
+          "output": "Raw file contents",
+          "agentsSelected": ["tool-utility"],
+          "confidence": 0.99
+        }
+      ],
+      "stats": {
+        "successRate": 0.98,
+        "avgUserRating": 4.4,
+        "usageCount": 2156,
+        "lastUpdated": "2026-02-01"
+      }
+    }
+  }
+}

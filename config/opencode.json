@@ -1,0 +1,306 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/glm-4.7",
+  "small_model": "opencode/gpt-5-nano",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "timeout": 600000,
+        "setCacheKey": true
+      }
+    },
+    "openai": {
+      "options": {
+        "baseURL": "https://us.api.openai.com/v1",
+        "timeout": 600000
+      }
+    },
+    "openrouter": {
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "timeout": 600000
+      }
+    }
+  },
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "enabled": true
+    }
+  },
+  "agent": {
+    "code-reviewer": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/code-reviewer.txt}",
+      "description": "Code review pipeline coordinator with architectural oversight",
+      "mode": "primary",
+      "temperature": 0.1,
+      "maxSteps": 25
+    },
+    "planner": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/planner.txt}",
+      "description": "Primary orchestrator for task decomposition and multi-expert coordination",
+      "mode": "primary",
+      "temperature": 0.3
+    },
+    "solo-orchestrator": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/solo-orchestrator.txt}",
+      "description": "Solo developer workflow coordinator with self-review patterns",
+      "mode": "primary",
+      "temperature": 0.2,
+      "maxSteps": 75
+    },
+    "security-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/security-expert.txt}",
+      "description": "Security patterns detection and anti-pattern scanning",
+      "mode": "subagent"
+    },
+    "deep-reviewer": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/deep-reviewer.txt}",
+      "description": "Deep code analysis and architectural synthesis",
+      "mode": "subagent",
+      "temperature": 0.3,
+      "maxSteps": 25
+    },
+    "tool-utility": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/tool-utility.txt}",
+      "description": "Force multiplier for file operations and mechanical tasks",
+      "mode": "subagent",
+      "temperature": 0
+    },
+    "dependency-guardian": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/dependency-guardian.txt}",
+      "description": "AI-driven dependency update evaluation and risk assessment",
+      "mode": "subagent",
+      "temperature": 0.2,
+      "maxSteps": 30
+    },
+    "doc-guardian": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/doc-guardian.txt}",
+      "description": "Guardian of living documentation and SSOT sync",
+      "mode": "subagent",
+      "maxSteps": 15
+    },
+    "guardrail-validator": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/guardrail-validator.txt}",
+      "description": "Semantic verifier for non-negotiable project guardrails",
+      "mode": "subagent"
+    },
+    "test-reviewer": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/test-reviewer.txt}",
+      "description": "Test coverage and quality analysis",
+      "mode": "subagent"
+    },
+    "fast-validator": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/fast-validator.txt}",
+      "description": "Fast pattern matching and integration validation",
+      "mode": "subagent"
+    },
+    "frontend-designer": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/frontend-designer.txt}",
+      "description": "High-quality frontend design specialist",
+      "mode": "subagent"
+    },
+    "terminal-error-reviewer": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/terminal-error-reviewer.txt}",
+      "description": "Terminal error diagnosis with intelligent model escalation",
+      "mode": "subagent"
+    },
+    "cloudflare-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/cloudflare-expert.txt}",
+      "description": "Cloudflare Workers patterns expert - Workers, D1, R2, KV, Queues",
+      "mode": "subagent",
+      "temperature": 0.3,
+      "maxSteps": 25
+    },
+    "flash-lite": {
+      "model": "opencode/gemini-3-flash",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/flash-lite.txt}",
+      "description": "Read-only flash agent for short reconnaissance tasks",
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "bash": false,
+        "edit": false,
+        "write": false
+      },
+      "permission": {
+        "question": "deny",
+        "read": {
+          "*": "allow",
+          ".env*": "deny"
+        },
+        "grep": {
+          "*": "allow",
+          ".env*": "deny",
+          "*.secret*": "deny",
+          ".dev.vars": "deny"
+        },
+        "bash": "deny",
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "glm-flash": {
+      "model": "openrouter/z-ai/glm-4.7-flash",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/glm-flash.txt}",
+      "description": "Fast GLM Flash via OpenRouter for quick tasks",
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "bash": true,
+        "edit": false,
+        "write": false
+      },
+      "permission": {
+        "question": "deny",
+        "read": {
+          "*": "allow",
+          ".env*": "deny",
+          "*.secret*": "deny"
+        },
+        "grep": {
+          "*": "allow",
+          ".env*": "deny",
+          "*.secret*": "deny",
+          ".dev.vars": "deny"
+        },
+        "bash": {
+          "npm": "allow",
+          "node": "allow",
+          "npx": "allow",
+          "git": "allow",
+          "ls": "allow",
+          "cat": "allow",
+          "head": "allow",
+          "tail": "allow",
+          "wc": "allow",
+          "grep": "allow",
+          "find": "allow",
+          "rm": "deny",
+          "sudo": "deny",
+          "mv": "deny",
+          "cp": "deny",
+          "curl": "deny",
+          "wget": "deny",
+          "ssh": "deny",
+          "scp": "deny",
+          "sftp": "deny",
+          "env": "deny",
+          "printenv": "deny",
+          "*": "deny"
+        },
+        "edit": "deny",
+        "write": "deny"
+      }
+    },
+    "glm-executor": {
+      "model": "openrouter/z-ai/glm-4.7-flash",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/glm-executor.txt}",
+      "description": "Mechanical code executor for pre-planned tasks",
+      "mode": "subagent",
+      "temperature": 0,
+      "tools": {
+        "read": true,
+        "grep": false,
+        "bash": false,
+        "edit": true,
+        "write": true
+      },
+      "maxSteps": 5,
+      "permission": {
+        "question": "deny",
+        "read": {
+          "*": "allow",
+          ".env*": "deny",
+          "*.secret*": "deny"
+        },
+        "grep": "deny",
+        "bash": "deny",
+        "edit": {
+          "src/**": "allow",
+          "tests/**": "allow",
+          ".env*": "deny"
+        },
+        "write": {
+          "src/**": "allow",
+          "tests/**": "allow",
+          ".env*": "deny"
+        }
+      }
+    },
+    "kimi-premium": {
+      "model": "opencode/kimi-k2.5",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/kimi-premium.txt}",
+      "description": "Premium reasoning specialist - near-OPUS quality",
+      "mode": "subagent",
+      "temperature": 1
+    },
+    "gpt5-security": {
+      "model": "opencode/gpt-5.2",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/gpt5-security.txt}",
+      "description": "Threat modeling, auth/token validation, and security audits",
+      "mode": "subagent"
+    },
+    "codexmax-implementation": {
+      "model": "opencode/gpt-5.2-codex",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/codexmax-implementation.txt}",
+      "description": "Precise TypeScript implementation, refactors, and edge-case handling",
+      "mode": "subagent"
+    },
+    "legend-state-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/legend-state-expert.txt}",
+      "description": "Legend State v3 observable state management, persistence, and sync patterns",
+      "mode": "subagent"
+    },
+    "valibot-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/valibot-expert.txt}",
+      "description": "Valibot schema validation, type inference, and parsing patterns",
+      "mode": "subagent"
+    },
+    "tamagui-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/tamagui-expert.txt}",
+      "description": "Tamagui universal UI components, tokens, theming, and cross-platform design",
+      "mode": "subagent"
+    },
+    "context7-super-expert": {
+      "model": "opencode/glm-4.7",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/context7-super-expert.txt}",
+      "description": "Context7 MCP integration for deep documentation retrieval and authoritative knowledge lookup",
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "bash": false,
+        "edit": false,
+        "write": false
+      },
+      "mcp": {
+        "context7": true
+      }
+    }
+  }
+}

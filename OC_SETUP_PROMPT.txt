@@ -1,0 +1,450 @@
+# OpenCode GitHub Repository Setup Prompt
+# Use this prompt in OpenCode within the opencode-global-config/ folder
+
+I need to initialize a GitHub repository for the opencode-global-config project and push all files. The current directory (/Users/benjaminerb/CODE/opencode-global-config) is not a git repository yet.
+
+Please help me:
+
+## 1. Initialize Git Repository
+
+Since this directory is not yet a git repository, initialize it and prepare for GitHub:
+
+```bash
+# Initialize git
+cd /Users/benjaminerb/CODE/opencode-global-config
+git init
+
+# Create .gitignore
+cat > .gitignore << 'EOF'
+# Backups
+*.backup
+*.bak
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+
+# Node modules (if any)
+node_modules/
+EOF
+
+# Add all files
+git add .
+
+# Initial commit
+git commit -m "Initial commit: OpenCode global configuration with 25 agents
+
+- Complete agent system with 3 orchestrators + 21 specialists
+- Build system for nested file reference resolution
+- Intelligent routing with 60-80% context reduction
+- Full documentation and setup guides
+- Ready for production use"
+```
+
+## 2. Create GitHub Repository
+
+Go to github.com and:
+1. Create new repository named "opencode-global-config"
+2. Make it public (or private if preferred)
+3. Do NOT initialize with README (we already have one)
+4. Copy the repository URL
+
+## 3. Connect and Push to GitHub
+
+```bash
+# Add remote (replace USERNAME with actual GitHub username)
+git remote add origin https://github.com/USERNAME/opencode-global-config.git
+
+# Push to main branch
+git branch -M main
+git push -u origin main
+```
+
+## 4. Verify Repository Structure
+
+Check that all required files and directories exist:
+- README.md
+- LICENSE
+- config/opencode.json (template)
+- config/agent-metadata.json
+- config/routing.json
+- docs/ (all documentation files)
+- scripts/ (router.js, analytics.js, init-project.sh)
+- stacks/ (cloudflare-worker, expo-native, tanstack-start)
+- universal/prompts/agents/ (all 25 agent prompt files)
+- universal/AGENTS.md
+
+## 5. Update Path References
+
+Check all configuration files and ensure paths use `~/.opencode`:
+
+In config/opencode.json:
+- All agent prompts should reference: `{file:~/.opencode/universal/prompts/agents/...}`
+- All extends should reference: `~/.config/opencode/opencode.json`
+
+In config/routing.json:
+- Metadata source: `~/.opencode/config/agent-metadata.json`
+- Routing stats: `~/.opencode/.cache/routing-stats.json`
+
+In universal/prompts/agents/*.txt:
+- Base includes: `{file:./prompts/base-subagent.txt}`
+- Registry includes: `{file:./prompts/agent-registry.txt}`
+
+## 6. Create Setup Script
+
+Create a comprehensive setup script at `scripts/setup.sh` that:
+
+```bash
+#!/bin/bash
+# OpenCode Global Configuration Setup Script
+
+set -e
+
+echo "OpenCode Global Configuration Setup"
+echo "===================================="
+echo ""
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check prerequisites
+echo "Checking prerequisites..."
+
+if ! command -v git &> /dev/null; then
+    echo -e "${RED}✗ Git is not installed${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Git installed${NC}"
+
+if ! command -v node &> /dev/null; then
+    echo -e "${YELLOW}⚠ Node.js is not installed (optional but recommended)${NC}"
+fi
+
+# Determine installation method
+echo ""
+echo "Choose installation method:"
+echo "1. Standard (~/.opencode directly) - Recommended for users"
+echo "2. Development (~/CODE/ with symlink) - Recommended for contributors"
+read -p "Enter choice (1 or 2): " choice
+
+if [ "$choice" = "1" ]; then
+    # Standard installation
+    REPO_DIR="$HOME/.opencode"
+    
+    if [ -d "$REPO_DIR" ]; then
+        echo -e "${YELLOW}⚠ $REPO_DIR already exists${NC}"
+        read -p "Overwrite? (y/N): " overwrite
+        if [ "$overwrite" = "y" ]; then
+            rm -rf "$REPO_DIR"
+        else
+            echo "Setup cancelled"
+            exit 1
+        fi
+    fi
+    
+    echo "Cloning to $REPO_DIR..."
+    # Note: Update this URL to your actual repo
+    git clone https://github.com/YOUR_USERNAME/opencode-global-config.git "$REPO_DIR"
+    
+elif [ "$choice" = "2" ]; then
+    # Development installation
+    CODE_DIR="$HOME/CODE/opencode-global-config"
+    SYMLINK="$HOME/.opencode"
+    
+    if [ -d "$CODE_DIR" ]; then
+        echo -e "${YELLOW}⚠ $CODE_DIR already exists${NC}"
+        read -p "Overwrite? (y/N): " overwrite
+        if [ "$overwrite" = "y" ]; then
+            rm -rf "$CODE_DIR"
+        else
+            echo "Setup cancelled"
+            exit 1
+        fi
+    fi
+    
+    # Remove old symlink if exists
+    if [ -L "$SYMLINK" ]; then
+        rm "$SYMLINK"
+    fi
+    
+    echo "Cloning to $CODE_DIR..."
+    git clone https://github.com/YOUR_USERNAME/opencode-global-config.git "$CODE_DIR"
+    
+    echo "Creating symlink..."
+    ln -s "$CODE_DIR" "$SYMLINK"
+    echo -e "${GREEN}✓ Created symlink: $SYMLINK -> $CODE_DIR${NC}"
+    
+else
+    echo -e "${RED}Invalid choice${NC}"
+    exit 1
+fi
+
+# Create config directory
+CONFIG_DIR="$HOME/.config/opencode"
+mkdir -p "$CONFIG_DIR"
+
+# Copy global config
+echo ""
+echo "Installing global configuration..."
+cp "$REPO_DIR/config/opencode.json" "$CONFIG_DIR/opencode.json"
+echo -e "${GREEN}✓ Copied config to $CONFIG_DIR/opencode.json${NC}"
+
+# Verify installation
+echo ""
+echo "Verifying installation..."
+
+# Check agent count
+AGENT_COUNT=$(grep -c '"model":' "$CONFIG_DIR/opencode.json" 2>/dev/null || echo "0")
+if [ "$AGENT_COUNT" -eq 25 ]; then
+    echo -e "${GREEN}✓ All 25 agents configured${NC}"
+else
+    echo -e "${YELLOW}⚠ Agent count: $AGENT_COUNT (expected 25)${NC}"
+fi
+
+# Check prompt files
+PROMPT_COUNT=$(ls "$REPO_DIR/universal/prompts/agents/"*.txt 2>/dev/null | wc -l)
+if [ "$PROMPT_COUNT" -eq 25 ]; then
+    echo -e "${GREEN}✓ All 25 prompt files present${NC}"
+else
+    echo -e "${YELLOW}⚠ Prompt files: $PROMPT_COUNT (expected 25)${NC}"
+fi
+
+# Test router script
+if [ -f "$REPO_DIR/scripts/router.js" ]; then
+    echo -e "${GREEN}✓ Router script found${NC}"
+else
+    echo -e "${RED}✗ Router script missing${NC}"
+fi
+
+# Create cache directory
+mkdir -p "$REPO_DIR/.cache"
+
+echo ""
+echo -e "${GREEN}====================================${NC}"
+echo -e "${GREEN}Setup complete!${NC}"
+echo ""
+echo "Next steps:"
+echo "1. Update the GitHub URL in this script to your actual repo"
+echo "2. Test the router: node $REPO_DIR/scripts/router.js 'test query'"
+echo "3. Start using agents in your projects!"
+echo ""
+echo "Directory structure:"
+echo "  Active config: ~/.config/opencode/opencode.json"
+echo "  Repository:    $REPO_DIR"
+```
+
+## 7. Create README Section for Directory Structure
+
+Add a clear "Directory Structure" section to README.md explaining:
+
+```markdown
+## 📁 Directory Structure
+
+### Three Key Locations
+
+1. **Active Configuration** (`~/.config/opencode/`)
+   - `opencode.json` - The active config OpenCode reads
+   - Copied from repository template
+   - Lightweight (single file)
+
+2. **Repository** (`~/.opencode/` or `~/CODE/opencode-global-config/`)
+   - Complete repository with all files
+   - Agent prompts, scripts, documentation
+   - Version controlled with Git
+
+3. **Project Config** (per project)
+   - `opencode.json` - Project-specific extensions
+   - `AGENTS.md` - Project guidelines
+
+### Path Resolution
+
+Agent prompts use paths like:
+```json
+"prompt": "{file:~/.opencode/universal/prompts/agents/router.txt}"
+```
+
+This works because:
+- Repo is cloned to `~/.opencode` (or symlinked there)
+- OpenCode expands `~/.opencode` to full path
+- All prompts loaded from repository
+```
+
+## 8. Create Installation Verification
+
+Create a verification script at `scripts/verify.sh`:
+
+```bash
+#!/bin/bash
+# Verification script for OpenCode Global Config
+
+echo "OpenCode Global Configuration Verification"
+echo "=========================================="
+echo ""
+
+ERRORS=0
+
+# Check 1: Active config exists
+if [ -f "$HOME/.config/opencode/opencode.json" ]; then
+    echo "✓ Active config exists: ~/.config/opencode/opencode.json"
+else
+    echo "✗ Missing: ~/.config/opencode/opencode.json"
+    ((ERRORS++))
+fi
+
+# Check 2: Repository exists
+if [ -d "$HOME/.opencode" ]; then
+    echo "✓ Repository exists: ~/.opencode"
+    
+    # Check if it's a symlink (Method B)
+    if [ -L "$HOME/.opencode" ]; then
+        echo "  (Symlink to: $(readlink $HOME/.opencode))"
+    fi
+else
+    echo "✗ Missing: ~/.opencode directory"
+    ((ERRORS++))
+fi
+
+# Check 3: Agent count
+AGENTS=$(grep -c '"model":' "$HOME/.config/opencode/opencode.json" 2>/dev/null || echo "0")
+if [ "$AGENTS" -eq 25 ]; then
+    echo "✓ Agent count correct: $AGENTS"
+else
+    echo "✗ Agent count incorrect: $AGENTS (expected 25)"
+    ((ERRORS++))
+fi
+
+# Check 4: Prompt files
+PROMPTS=$(ls "$HOME/.opencode/universal/prompts/agents/"*.txt 2>/dev/null | wc -l)
+if [ "$PROMPTS" -eq 25 ]; then
+    echo "✓ Prompt files correct: $PROMPTS"
+else
+    echo "✗ Prompt files incorrect: $PROMPTS (expected 25)"
+    ((ERRORS++))
+fi
+
+# Check 5: Critical files exist
+FILES=(
+    "$HOME/.opencode/config/agent-metadata.json"
+    "$HOME/.opencode/config/routing.json"
+    "$HOME/.opencode/scripts/router.js"
+    "$HOME/.opencode/scripts/init-project.sh"
+)
+
+for file in "${FILES[@]}"; do
+    if [ -f "$file" ]; then
+        echo "✓ $(basename $file) exists"
+    else
+        echo "✗ Missing: $(basename $file)"
+        ((ERRORS++))
+    fi
+done
+
+echo ""
+if [ $ERRORS -eq 0 ]; then
+    echo "✅ All checks passed! Installation is complete."
+    exit 0
+else
+    echo "❌ $ERRORS issue(s) found. Please review above."
+    exit 1
+fi
+```
+
+## 9. Update Documentation
+
+Ensure these files contain consistent, accurate information:
+
+1. **README.md** - Quick start, overview, installation
+2. **docs/SETUP_GUIDE.md** - Detailed installation instructions  
+3. **docs/INTELLIGENT_ROUTING.md** - Routing system documentation
+4. **docs/AGENT_HIERARCHY.md** - Three-tier system explanation
+
+All should reference:
+- `~/.opencode` as the repo location
+- `~/.config/opencode/opencode.json` as the active config
+- `~/.opencode/config/opencode.json` as the template
+
+## 10. Test the Setup
+
+Run these commands to verify everything works:
+
+```bash
+# 1. Verify structure
+bash scripts/verify.sh
+
+# 2. Test router
+node scripts/router.js "Create validation schema"
+
+# 3. Check agent loading
+# (This requires OpenCode to be installed and running)
+```
+
+## GitHub Setup Checklist
+
+- [ ] Git repository initialized (`git init`)
+- [ ] .gitignore created with proper exclusions
+- [ ] Initial commit made with all files
+- [ ] GitHub repository created (github.com)
+- [ ] Remote added (`git remote add origin ...`)
+- [ ] Files pushed to main branch (`git push -u origin main`)
+- [ ] Repository visible on GitHub
+- [ ] README displays correctly on GitHub
+- [ ] All 25 agents in config/opencode.json
+- [ ] All 25 prompt files in universal/prompts/agents/
+- [ ] setup.sh script created and executable
+- [ ] verify.sh script created and executable
+- [ ] README.md has clear directory structure section
+- [ ] All paths use ~/.opencode consistently
+- [ ] docs/SETUP_GUIDE.md covers both installation methods
+- [ ] Intelligent routing files present (agent-metadata.json, routing.json)
+- [ ] Scripts are executable (chmod +x)
+- [ ] No sensitive data in repository (API keys, etc.)
+
+## Final Output
+
+After completing this setup, provide:
+
+1. **GitHub Repository URL**: The link to the created repository
+2. **Summary**: What was set up and where
+3. **Installation Commands**: Quick copy-paste commands for users
+4. **Directory Map**: Visual diagram of the three locations
+5. **Next Steps**: How to use the configuration
+6. **Testing**: How to verify it's working
+
+## Post-GitHub Setup Instructions for Users
+
+Once on GitHub, users can install with:
+
+```bash
+# Method A: Standard installation
+git clone https://github.com/USERNAME/opencode-global-config.git ~/.opencode
+mkdir -p ~/.config/opencode
+cp ~/.opencode/config/opencode.json ~/.config/opencode/
+
+# Method B: Development installation
+git clone https://github.com/USERNAME/opencode-global-config.git ~/CODE/opencode-global-config
+ln -s ~/CODE/opencode-global-config ~/.opencode
+mkdir -p ~/.config/opencode
+cp ~/.opencode/config/opencode.json ~/.config/opencode/
+
+# Verify
+bash ~/.opencode/scripts/verify.sh
+```
+
+Replace USERNAME with your actual GitHub username.
