@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+*.log
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+*.test.ts.snap
+
+# Claude Mem runtime files (when testing locally)
+.claude-mem/
+*.pid
+
+# Temporary files
+*.tmp
+.tmp/
+temp/
