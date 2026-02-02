@@ -1,4 +1,4 @@
 [submodule "packages/memory-plugin"]
 	path = packages/memory-plugin
 	url = https://github.com/coniferconcepts/opencode-memory-bridge.git
-	branch = extraction-phase3
+	branch = clean-main
