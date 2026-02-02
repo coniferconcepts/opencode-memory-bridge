@@ -60,9 +60,10 @@ The content-tracker repository currently contains three distinct concerns mixed 
 
 ✅ **Repository 2: opencode-memory-bridge**
 - Extract from packages/memory-plugin/
-- Setup npm package (@opencode/memory-plugin)
-- Configure CI/CD for automated publishing
+- Setup as standalone git repository
+- Configure for git submodule distribution (not npm)
 - Maintain all tests and benchmarks
+- Tag versions for release tracking
 
 ✅ **Repository 3: opencode-global-config (Update)**
 - Already exists with hook interfaces
@@ -71,9 +72,11 @@ The content-tracker repository currently contains three distinct concerns mixed 
 
 ✅ **Repository 4: content-tracker (Migration)**
 - Remove packages/memory-plugin/
-- Add npm dependency on @opencode/memory-plugin
-- Replace .claude/plugins/claude-mem/ with git submodule
+- Add opencode-memory-bridge as git submodule (replaces npm dependency)
+- Add claude-mem-source as git submodule
 - Update documentation and imports
+- Configure git submodule workflow
+- Update CI/CD to handle submodules
 
 ### Out of Scope
 
@@ -115,20 +118,22 @@ The content-tracker repository currently contains three distinct concerns mixed 
 ├─────────────────────────────────────────────────────────────────┤
 │  ORIGIN: Extracted from content-tracker/packages/memory-plugin/│
 │  PURPOSE: OpenCode plugin bridge to claude-mem service         │
-│  PACKAGE: @opencode/memory-plugin                              │
-│  VERSION: Independent semantic versioning (starts at 3.2.0)    │
+│  PACKAGE: @opencode/memory-plugin (git-based, not npm)         │
+│  VERSION: Independent semantic versioning via git tags         │
 │  LICENSE: MIT (our code)                                        │
 │  MAINTENANCE: Feature development, bug fixes, releases         │
 ├─────────────────────────────────────────────────────────────────┤
 │  INSTALLATION:                                                  │
-│  • npm install @opencode/memory-plugin                         │
-│  • Or: bun install @opencode/memory-plugin                     │
-│  • Or: pnpm install @opencode/memory-plugin                    │
+│  • Git submodule (recommended):                                │
+│    git submodule add github.com/coniferconcepts/...            │
+│  • Or: github: reference in package.json                       │
+│  • Or: file: reference for local development                   │
 ├─────────────────────────────────────────────────────────────────┤
 │  DEPENDENCIES:                                                  │
-│  • Peer: claude-mem-source (running on port 37777)             │
+│  • Runtime: claude-mem-source (running on port 37777)          │
 │  • Dev: @opencode-ai/plugin, @types/node, vitest, etc.         │
 │  • Uses types from opencode-global-config                      │
+│  • Distribution: Git submodules (NOT npm registry)             │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               │ Implements
@@ -143,6 +148,79 @@ The content-tracker repository currently contains three distinct concerns mixed 
 │  USAGE: Imported by bridge and any custom hook implementations │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Distribution Strategy: Git Submodules (Not npm)
+
+### Decision Rationale
+
+**Why Git Submodules Instead of npm:**
+
+After evaluating all distribution options (documented in PRIVATE_DISTRIBUTION_OPTIONS.md), we selected **git submodules** as the primary distribution method for the following reasons:
+
+1. **Privacy**: No need to publish to public npm registry
+2. **Control**: Full control over versioning via git tags/commits
+3. **Simplicity**: Works with existing git workflows
+4. **Cost**: Free, no npm organization fees
+5. **Flexibility**: Easy to modify and test locally
+6. **Team Familiarity**: Team already uses git extensively
+
+### Installation Methods
+
+**Method 1: Git Submodules (Primary)**
+```bash
+git submodule add \
+  https://github.com/coniferconcepts/opencode-memory-bridge.git \
+  packages/memory-plugin
+
+git submodule init
+git submodule update
+```
+
+**package.json:**
+```json
+{
+  "dependencies": {
+    "@opencode/memory-plugin": "file:./packages/memory-plugin"
+  }
+}
+```
+
+**Method 2: GitHub Reference (Alternative)**
+```json
+{
+  "dependencies": {
+    "@opencode/memory-plugin": "github:coniferconcepts/opencode-memory-bridge#v3.2.0"
+  }
+}
+```
+
+**Method 3: Local Path (Development)**
+```json
+{
+  "dependencies": {
+    "@opencode/memory-plugin": "file:../opencode-memory-bridge"
+  }
+}
+```
+
+### Version Management
+
+Instead of npm semver, we use:
+
+- **Git Tags**: `v3.2.0`, `v3.2.1`, etc.
+- **Commit SHAs**: Pin to specific commits for reproducibility
+- **Branches**: `main` for stable, `develop` for integration
+
+### When to Use npm Instead
+
+This project intentionally avoids npm publishing, but you could add it later if:
+- You want to share with external community
+- You need npm's ecosystem features (semver resolution, etc.)
+- You're comfortable with public or paid private npm
+
+See PRIVATE_DISTRIBUTION_OPTIONS.md for detailed npm alternatives if needed.
 
 ---
 
@@ -171,7 +249,7 @@ The content-tracker repository currently contains three distinct concerns mixed 
    - Add LICENSE (MIT for our code)
    - Setup branch protection
    - Enable GitHub Actions
-   - Configure npm publishing secrets
+   - Configure git tag-based versioning
 
 3. ✅ Update `coniferconcepts/opencode-global-config`
    - Add references to new repos in README
@@ -537,54 +615,70 @@ The content-tracker repository currently contains three distinct concerns mixed 
 - [ ] TypeScript compilation passing
 - [ ] No broken references
 
-#### Task 3.3: Setup npm Package Publishing
+#### Task 3.3: Setup Git Submodule Distribution (NOT npm)
 
-**Assignee:** DevOps/Developer
-**Effort:** 6 hours
+**Assignee:** Developer
+**Effort:** 4 hours
 **Dependencies:** Task 3.2
 
-**Steps:**
-1. Configure npm authentication
-   - Add NPM_TOKEN to GitHub secrets
-   - Configure .npmrc for publishing
+**Rationale:** Using git submodules instead of npm publishing for private distribution. See PRIVATE_DISTRIBUTION_OPTIONS.md for alternatives comparison.
 
-2. Create publish workflow
+**Steps:**
+1. Configure package.json for git-based installation
+   ```json
+   {
+     "name": "@opencode/memory-plugin",
+     "version": "3.2.0",
+     "main": "dist/index.js",
+     "types": "dist/index.d.ts",
+     "repository": {
+       "type": "git",
+       "url": "https://github.com/coniferconcepts/opencode-memory-bridge.git"
+     },
+     "scripts": {
+       "build": "tsc",
+       "test": "vitest",
+       "benchmark": "bun run src/__tests__/benchmarks/hook-performance.ts"
+     }
+   }
+   ```
+
+2. Create initial git tag for versioning
+   ```bash
+   git tag -a v3.2.0 -m "Initial extraction from content-tracker"
+   git push origin v3.2.0
+   ```
+
+3. Document installation methods in README.md
+   - Method 1: Git submodule (recommended)
+   - Method 2: GitHub reference in package.json
+   - Method 3: Local path for development
+
+4. Create version release workflow (optional)
    ```yaml
-   # .github/workflows/publish.yml
-   name: Publish to npm
+   # .github/workflows/release.yml
+   name: Create Release
    on:
-     release:
-       types: [created]
+     push:
+       tags:
+         - 'v*'
    jobs:
-     publish:
+     release:
        runs-on: ubuntu-latest
        steps:
          - uses: actions/checkout@v4
-         - uses: oven-sh/setup-bun@v1
-         - run: bun install
-         - run: bun run build
-         - run: bun test
-         - uses: JS-DevTools/npm-publish@v3
+         - name: Create Release
+           uses: actions/create-release@v1
            with:
-             token: ${{ secrets.NPM_TOKEN }}
-             access: public
-   ```
-
-3. Add automated versioning
-   - Use semantic-release or manual
-   - Setup CHANGELOG.md generation
-   - Configure version tagging
-
-4. Test with dry-run
-   ```bash
-   npm publish --dry-run
+             tag_name: ${{ github.ref }}
+             release_name: Release ${{ github.ref }}
    ```
 
 **Deliverables:**
-- [ ] npm publishing configured
-- [ ] GitHub workflow created
-- [ ] Tested with dry-run
-- [ ] First version ready to publish
+- [ ] Package configured for git distribution
+- [ ] Initial version tag created (v3.2.0)
+- [ ] Installation methods documented
+- [ ] Ready for submodule installation
 
 #### Task 3.4: Setup Comprehensive CI/CD
 
@@ -676,10 +770,10 @@ The content-tracker repository currently contains three distinct concerns mixed 
 
 **Checkpoint 3:** End of Week 4
 - ✅ Bridge extracted to standalone repo
-- ✅ npm publishing configured
+- ✅ Git distribution configured (submodules, not npm)
 - ✅ CI/CD comprehensive
 - ✅ Documentation complete
-- ✅ Package ready for publishing
+- ✅ Package ready for git submodule installation
 
 ---
 
@@ -1133,7 +1227,7 @@ Buffer: Week 6 has 2 days buffer for issues
 |------|--------|----------------|
 | **Lead Developer** | 80 hours | Architecture, complex tasks, code review |
 | **Developer** | 120 hours | Implementation, testing, documentation |
-| **DevOps Engineer** | 40 hours | CI/CD setup, npm publishing, automation |
+| **DevOps Engineer** | 40 hours | CI/CD setup, git workflows, automation |
 | **Technical Writer** | 40 hours | Documentation, guides, examples |
 | **QA Engineer** | 32 hours | Testing, validation, bug reporting |
 | **Security Lead** | 16 hours | Security audit, vulnerability assessment |
@@ -1143,7 +1237,7 @@ Buffer: Week 6 has 2 days buffer for issues
 ### Tools & Infrastructure
 
 - GitHub repositories (already available)
-- npm organization account (@opencode)
+- Git submodules workflow
 - CI/CD minutes (GitHub Actions)
 - Test environments
 - Documentation hosting (GitHub Pages optional)
@@ -1153,7 +1247,7 @@ Buffer: Week 6 has 2 days buffer for issues
 | Item | Cost | Notes |
 |------|------|-------|
 | Personnel | $15,000-25,000 | Contract rates for 6 weeks |
-| Infrastructure | $100-200 | CI/CD, npm, storage |
+| Infrastructure | $50-100 | CI/CD, storage (no npm costs) |
 | Tools | $0 | Using existing/free tools |
 | **Total** | **~$15,100-25,200** | |
 
@@ -1275,7 +1369,7 @@ Buffer: Week 6 has 2 days buffer for issues
 ✅ **Criterion 2:** Content-tracker migrated successfully
 - Old code removed cleanly
 - New submodules working
-- npm package installed and functional
+- Git submodule installation functional
 - All tests passing
 
 ✅ **Criterion 3:** No functionality regression
@@ -1292,10 +1386,11 @@ Buffer: Week 6 has 2 days buffer for issues
 
 ### Should Have (Important Success Factors)
 
-🎯 **Criterion 5:** npm package published and installable
-- @opencode/memory-plugin on npm registry
-- Can be installed in fresh project
-- Works without content-tracker
+🎯 **Criterion 5:** Git submodule installation tested and documented
+- Submodule can be added to fresh project
+- Installation documentation clear and tested
+- Works with bun install / npm install
+- Version pinning with git tags functional
 
 🎯 **Criterion 6:** Upstream sync workflow functional
 - Can sync from thedotmack/claude-mem
@@ -1521,7 +1616,7 @@ opencode-global-config/
 |------|----------|-----------|--------|
 | 2026-02-01 | Separate into 3 repos | Clear boundaries, independent releases | High |
 | 2026-02-01 | Fork vs reimplement | Preserve upstream compatibility | High |
-| 2026-02-01 | npm package for bridge | Reusability, versioning | High |
+| 2026-02-01 | Git submodules for bridge | Reusability, versioning, private | High |
 | 2026-02-01 | Git submodules | Track external dependencies | Medium |
 | 2026-02-01 | Keep types in global-config | Single source of truth | Medium |
 
