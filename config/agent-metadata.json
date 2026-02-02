@@ -545,6 +545,171 @@
         "usageCount": 2156,
         "lastUpdated": "2026-02-01"
       }
+    },
+    "opus": {
+      "id": "opus",
+      "name": "Opus Premium Reasoning",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["complex-reasoning", "creative-problem-solving", "strategic-analysis", "deep-debugging"],
+        "secondary": ["research", "algorithm-design", "multi-hop-reasoning", "philosophical-analysis"],
+        "technologies": ["reasoning", "analysis", "claude-3-opus"],
+        "domains": ["reasoning", "research", "strategy"]
+      },
+      "triggers": {
+        "keywords": ["complex", "difficult", "strategic", "creative solution", "deep analysis", "hard problem", "algorithm design", "research", "think deeply"],
+        "patterns": [
+          "/complex.*problem/i",
+          "/strategic.*decision/i",
+          "/creative.*solution/i",
+          "/deep.*analysis/i",
+          "/algorithm.*design/i",
+          "/hard.*debug/i",
+          "/research.*synthesis/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["planner", "codexmax-implementation", "memory-bridge"],
+        "requiredFor": ["complex-reasoning", "high-stakes-decisions"],
+        "optional": ["deep-reviewer", "security-expert"]
+      },
+      "constraints": {
+        "maxContextTokens": 200000,
+        "avgResponseTime": 8000,
+        "costPer1kTokens": 0.15,
+        "complexity": "very-high"
+      },
+      "examples": [
+        {
+          "input": "@opus Design a distributed consensus algorithm for my system",
+          "output": "Comprehensive algorithm design with trade-offs and implementation guidance",
+          "agentsSelected": ["opus"],
+          "confidence": 0.96
+        },
+        {
+          "input": "@opus This race condition only happens in production, help me debug it",
+          "output": "Systematic debugging approach for distributed race conditions",
+          "agentsSelected": ["opus"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.92,
+        "avgUserRating": 4.8,
+        "usageCount": 0,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "gpt": {
+      "id": "gpt",
+      "name": "GPT General Intelligence",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["general-reasoning", "writing", "explanation", "brainstorming"],
+        "secondary": ["analysis", "debugging", "documentation", "multi-domain"],
+        "technologies": ["gpt-4", "gpt-5", "general-purpose"],
+        "domains": ["general", "writing", "learning"]
+      },
+      "triggers": {
+        "keywords": ["help", "explain", "write", "brainstorm", "general", "question", "how to", "what is", "why", "clarify"],
+        "patterns": [
+          "/explain.*to me/i",
+          "/help.*understand/i",
+          "/write.*documentation/i",
+          "/brainstorm.*ideas/i",
+          "/general.*question/i",
+          "/how.*does/i",
+          "/what.*is/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["tool-utility", "context7-super-expert"],
+        "requiredFor": ["general-tasks", "writing", "learning"],
+        "optional": ["codex", "opus"]
+      },
+      "constraints": {
+        "maxContextTokens": 8000,
+        "avgResponseTime": 3000,
+        "costPer1kTokens": 0.03,
+        "complexity": "medium"
+      },
+      "examples": [
+        {
+          "input": "@gpt Explain how JWT authentication works",
+          "output": "Clear explanation with examples and best practices",
+          "agentsSelected": ["gpt"],
+          "confidence": 0.95
+        },
+        {
+          "input": "@gpt Write documentation for our API endpoints",
+          "output": "Comprehensive API documentation",
+          "agentsSelected": ["gpt", "doc-guardian"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.94,
+        "avgUserRating": 4.6,
+        "usageCount": 0,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "codex": {
+      "id": "codex",
+      "name": "Codex Code Generation",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["code-generation", "multi-language", "feature-implementation", "boilerplate"],
+        "secondary": ["refactoring", "code-translation", "test-generation", "scripting"],
+        "technologies": ["codex", "programming", "multi-language"],
+        "domains": ["development", "coding", "implementation"]
+      },
+      "triggers": {
+        "keywords": ["generate code", "implement", "write code", "create function", "boilerplate", "scaffold", "code", "programming", "script"],
+        "patterns": [
+          "/generate.*code/i",
+          "/implement.*feature/i",
+          "/write.*function/i",
+          "/create.*component/i",
+          "/boilerplate/i",
+          "/scaffold/i",
+          "/translate.*to.*language/i"
+        ],
+        "codeSignals": ["function", "class", "const", "let", "var", "import", "export"]
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["gpt", "test-reviewer", "code-reviewer"],
+        "requiredFor": ["implementation", "code-generation"],
+        "optional": ["codexmax-implementation", "security-expert"]
+      },
+      "constraints": {
+        "maxContextTokens": 12000,
+        "avgResponseTime": 4000,
+        "costPer1kTokens": 0.05,
+        "complexity": "high"
+      },
+      "examples": [
+        {
+          "input": "@codex Generate a rate limiter middleware in TypeScript",
+          "output": "Complete TypeScript implementation with tests",
+          "agentsSelected": ["codex"],
+          "confidence": 0.93
+        },
+        {
+          "input": "@codex Convert this Python script to TypeScript",
+          "output": "TypeScript equivalent with proper types",
+          "agentsSelected": ["codex"],
+          "confidence": 0.91
+        }
+      ],
+      "stats": {
+        "successRate": 0.90,
+        "avgUserRating": 4.5,
+        "usageCount": 0,
+        "lastUpdated": "2026-02-01"
+      }
     }
   }
 }

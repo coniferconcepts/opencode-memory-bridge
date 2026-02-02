@@ -301,6 +301,30 @@
       "mcp": {
         "context7": true
       }
+    },
+    "opus": {
+      "model": "opencode/claude-3-opus",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/opus.txt}",
+      "description": "Premium reasoning agent for complex analysis, creative problem-solving, and high-stakes decisions",
+      "mode": "subagent",
+      "temperature": 0.7,
+      "maxSteps": 50
+    },
+    "gpt": {
+      "model": "opencode/gpt-5",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/gpt.txt}",
+      "description": "General-purpose GPT agent for writing, analysis, explanation, and versatile tasks across domains",
+      "mode": "subagent",
+      "temperature": 0.5,
+      "maxSteps": 30
+    },
+    "codex": {
+      "model": "opencode/gpt-5-codex",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/codex.txt}",
+      "description": "Code generation agent for multi-language programming, feature implementation, and software development",
+      "mode": "subagent",
+      "temperature": 0.2,
+      "maxSteps": 40
     }
   }
 }
