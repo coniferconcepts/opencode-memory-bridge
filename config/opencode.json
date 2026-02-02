@@ -303,28 +303,36 @@
       }
     },
     "opus": {
-      "model": "opencode/claude-3-opus",
+      "model": "opencode/claude-opus-4-5",
       "prompt": "{file:~/.opencode/universal/prompts/agents/opus.txt}",
-      "description": "Premium reasoning agent for complex analysis, creative problem-solving, and high-stakes decisions",
+      "description": "Premium reasoning agent (Claude Opus 4.5) for complex analysis, creative problem-solving, and high-stakes decisions",
       "mode": "subagent",
       "temperature": 0.7,
       "maxSteps": 50
     },
     "gpt": {
-      "model": "opencode/gpt-5",
+      "model": "opencode/gpt-5.2",
       "prompt": "{file:~/.opencode/universal/prompts/agents/gpt.txt}",
-      "description": "General-purpose GPT agent for writing, analysis, explanation, and versatile tasks across domains",
+      "description": "General-purpose GPT agent (GPT-5.2) for writing, analysis, explanation, and versatile tasks across domains",
       "mode": "subagent",
       "temperature": 0.5,
       "maxSteps": 30
     },
     "codex": {
-      "model": "opencode/gpt-5-codex",
+      "model": "opencode/gpt-5.2-codex",
       "prompt": "{file:~/.opencode/universal/prompts/agents/codex.txt}",
-      "description": "Code generation agent for multi-language programming, feature implementation, and software development",
+      "description": "Code generation agent (GPT-5.2-Codex) for multi-language programming, feature implementation, and software development",
       "mode": "subagent",
       "temperature": 0.2,
       "maxSteps": 40
+    },
+    "codex-max": {
+      "model": "opencode/gpt-5.1-codex-max",
+      "prompt": "{file:~/.opencode/universal/prompts/agents/codex-max.txt}",
+      "description": "Maximum capability code agent (GPT-5.1-Codex-Max) for complex implementations, refactors, and edge-case handling",
+      "mode": "subagent",
+      "temperature": 0.1,
+      "maxSteps": 50
     }
   }
 }

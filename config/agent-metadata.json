@@ -553,7 +553,7 @@
       "capabilities": {
         "primary": ["complex-reasoning", "creative-problem-solving", "strategic-analysis", "deep-debugging"],
         "secondary": ["research", "algorithm-design", "multi-hop-reasoning", "philosophical-analysis"],
-        "technologies": ["reasoning", "analysis", "claude-3-opus"],
+        "technologies": ["reasoning", "analysis", "claude-opus-4-5"],
         "domains": ["reasoning", "research", "strategy"]
       },
       "triggers": {
@@ -707,6 +707,62 @@
       "stats": {
         "successRate": 0.90,
         "avgUserRating": 4.5,
+        "usageCount": 0,
+        "lastUpdated": "2026-02-01"
+      }
+    },
+    "codex-max": {
+      "id": "codex-max",
+      "name": "Codex Max Capability",
+      "version": "1.0.0",
+      "capabilities": {
+        "primary": ["maximum-code-generation", "complex-algorithms", "edge-case-handling", "performance-critical"],
+        "secondary": ["large-refactoring", "security-critical", "multi-file-changes", "formal-specs"],
+        "technologies": ["codex-max", "gpt-5.1-codex-max", "multi-language"],
+        "domains": ["development", "critical-code", "algorithms"]
+      },
+      "triggers": {
+        "keywords": ["codex-max", "maximum", "critical", "complex algorithm", "formal", "security-critical", "performance-critical", "edge cases", "comprehensive", "audit"],
+        "patterns": [
+          "/codex.?max/i",
+          "/maximum.*capability/i",
+          "/critical.*code/i",
+          "/complex.*algorithm/i",
+          "/formal.*spec/i",
+          "/security.?critical/i",
+          "/performance.?critical/i",
+          "/all.*edge.*cases/i"
+        ],
+        "codeSignals": []
+      },
+      "dependencies": {
+        "commonlyUsedWith": ["opus", "security-expert", "test-reviewer"],
+        "requiredFor": ["critical-implementations", "security-code", "complex-algorithms"],
+        "optional": ["codexmax-implementation"]
+      },
+      "constraints": {
+        "maxContextTokens": 16000,
+        "avgResponseTime": 8000,
+        "costPer1kTokens": 0.10,
+        "complexity": "very-high"
+      },
+      "examples": [
+        {
+          "input": "@codex-max Implement a Byzantine fault-tolerant consensus algorithm",
+          "output": "Complete consensus implementation with formal safety properties",
+          "agentsSelected": ["codex-max"],
+          "confidence": 0.95
+        },
+        {
+          "input": "@codex-max Create secure password hashing with audit-ready quality",
+          "output": "Cryptographically secure implementation with comprehensive documentation",
+          "agentsSelected": ["codex-max", "security-expert"],
+          "confidence": 0.94
+        }
+      ],
+      "stats": {
+        "successRate": 0.92,
+        "avgUserRating": 4.7,
         "usageCount": 0,
         "lastUpdated": "2026-02-01"
       }
