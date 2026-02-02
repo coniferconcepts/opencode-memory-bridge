@@ -1,0 +1,609 @@
+# COMPREHENSIVE EXPERT AGENT ENHANCEMENT PROMPT
+## Version: 1.0.0 | Date: 2026-02-01
+## Models: kimi-2.5 (synthesis) + context7-super-expert (documentation lookup)
+
+---
+
+## 🎯 OBJECTIVE
+
+Enhance all library/subdomain expert subagents with:
+- High-level architectural patterns from authoritative sources
+- ALWAYS/NEVER critical guardrails
+- Common pitfalls and anti-patterns to avoid
+- Version-specific syntax changes
+- Integration patterns with other technologies
+- Authoritative examples and references
+
+---
+
+## 📋 TARGET EXPERT AGENTS
+
+1. **@valibot-expert** - Validation library (Valibot)
+2. **@legend-state-expert** - State management (Legend State v3)
+3. **@tamagui-expert** - UI framework (Tamagui)
+4. **@cloudflare-expert** - Platform (Cloudflare Workers, D1, etc.)
+5. **@security-expert** - Security patterns
+6. **@deep-reviewer** - Architectural review
+7. **@test-reviewer** - Testing patterns
+
+---
+
+## 🔧 STEP-BY-STEP WORKFLOW
+
+### PHASE 1: Knowledge Gathering (PARALLEL)
+
+For each expert, invoke **@context7-super-expert** to query authoritative documentation:
+
+#### Query Template for Each Expert:
+
+```
+Use the Context7 MCP tools to research the following for [TECHNOLOGY_NAME]:
+
+1. **Library Resolution** (use context7_resolve-library-id):
+   - Query: "Find the Context7 library ID for [TECHNOLOGY_NAME] latest version"
+   - Verify: Check the library has good documentation coverage (Code Snippet count)
+
+2. **Core Documentation Queries** (use context7_query-docs for each):
+   
+   A. High-Level Patterns:
+      - "What are the core architectural patterns for [TECHNOLOGY_NAME]?"
+      - "What are the recommended design patterns for building scalable apps?"
+      - "What are the best practices for code organization?"
+   
+   B. ALWAYS/NEVER Rules:
+      - "What are critical dos and don'ts?"
+      - "What common mistakes should be avoided?"
+      - "What are the anti-patterns to watch out for?"
+   
+   C. Integration Patterns:
+      - "How does [TECHNOLOGY_NAME] integrate with [RELATED_TECH_1]?"
+      - "How does [TECHNOLOGY_NAME] integrate with [RELATED_TECH_2]?"
+      - "What are the common integration pitfalls?"
+   
+   D. Version-Specific Information:
+      - "What are the latest syntax changes in version [VERSION]?"
+      - "What breaking changes exist from previous versions?"
+      - "What new features should be used over deprecated ones?"
+   
+   E. Beginner Mistakes:
+      - "What basic patterns do beginners often miss?"
+      - "What simple mistakes cause the most bugs?"
+      - "What are the most common StackOverflow questions about this?"
+
+3. **Extract and Structure**:
+   - For each query result, extract code examples
+   - Identify specific ALWAYS/NEVER statements
+   - Note version numbers and compatibility requirements
+   - List related technologies and integration points
+
+Return structured findings in this format:
+```json
+{
+  "technology": "[TECHNOLOGY_NAME]",
+  "library_id": "[CONTEXT7_LIBRARY_ID]",
+  "version": "[LATEST_VERSION]",
+  "confidence": 0-100,
+  "patterns": [
+    {
+      "name": "Pattern Name",
+      "description": "What it is and when to use",
+      "code_example": "```typescript\n// Code example\n```",
+      "importance": "critical|high|medium|low"
+    }
+  ],
+  "always_rules": [
+    {
+      "rule": "ALWAYS do X",
+      "rationale": "Why this matters",
+      "consequence": "What happens if violated",
+      "code_example": "```typescript\n// Correct implementation\n```"
+    }
+  ],
+  "never_rules": [
+    {
+      "rule": "NEVER do Y",
+      "rationale": "Why this is dangerous",
+      "consequence": "What happens if violated",
+      "anti_pattern": "```typescript\n// WRONG - Don't do this\n```",
+      "solution": "```typescript\n// CORRECT - Do this instead\n```"
+    }
+  ],
+  "common_pitfalls": [
+    {
+      "pitfall": "Description of common mistake",
+      "symptoms": "How to recognize this mistake",
+      "prevention": "How to avoid it",
+      "fix": "How to fix if found"
+    }
+  ],
+  "integration_patterns": [
+    {
+      "partner_technology": "Name of related tech",
+      "pattern": "How to integrate",
+      "code_example": "```typescript\n// Integration example\n```",
+      "caveats": "What to watch out for"
+    }
+  ],
+  "version_notes": [
+    {
+      "version": "Version number",
+      "changes": "What changed",
+      "migration": "How to migrate",
+      "deprecated": "What's no longer recommended"
+    }
+  ],
+  "authoritative_links": [
+    "Specific URLs or doc references"
+  ]
+}
+```
+```
+
+### PHASE 2: Synthesis (kimi-2.5)
+
+After receiving findings from all context7 queries, use kimi-2.5 to:
+
+1. **Cross-reference findings** - Identify conflicts or inconsistencies
+2. **Synthesize patterns** - Group related patterns into higher-level abstractions
+3. **Prioritize rules** - Rank by criticality (P0 = data loss, P1 = security, P2 = performance, P3 = maintainability)
+4. **Format enhancements** - Prepare structured sections for each expert
+
+---
+
+## 📁 EXPERT-SPECIFIC RESEARCH QUERIES
+
+### 1. @valibot-expert
+
+**Technology**: Valibot (validation library)
+**Context7 Library**: Search for "valibot"
+**Related Technologies**: tRPC, Hono, React Hook Form, React Native
+
+**Specific Queries**:
+```
+1. "Valibot schema composition patterns and best practices"
+2. "Valibot v.InferOutput vs v.InferInput type inference patterns"
+3. "Valibot pipe transformations and custom validation patterns"
+4. "Valibot integration with tRPC for input validation"
+5. "Valibot form validation patterns with error handling"
+6. "Valibot performance optimization for validation pipelines"
+7. "Valibot v1.0 breaking changes and migration from v0.x"
+8. "Valibot async validation patterns with external data"
+9. "Valibot union and intersection type patterns"
+10. "Common Valibot mistakes and how to avoid them"
+```
+
+**Output File**: `universal/prompts/agents/valibot-expert-enhanced.txt`
+
+---
+
+### 2. @legend-state-expert
+
+**Technology**: Legend State v3 (state management)
+**Context7 Library**: Search for "legend-state" or "Legend State"
+**Related Technologies**: React, React Native, MMKV, localStorage, tRPC, syncedCrud
+
+**Specific Queries**:
+```
+1. "Legend State v3 observable patterns and reactivity model"
+2. "Legend State syncedCrud configuration and field mapping"
+3. "Legend State fieldId and fieldUpdatedAt mapping patterns"
+4. "Legend State persistence with MMKV and localStorage"
+5. "Legend State offline-first data synchronization patterns"
+6. "Legend State React integration with use$() hook"
+7. "Legend State state normalization and relationship handling"
+8. "Legend State computed values and transformation pipelines"
+9. "Legend State list management and sorting/selection patterns"
+10. "Legend State optimistic updates with rollback patterns"
+11. "Legend State v3 vs v2 breaking changes and migration"
+12. "Common Legend State mistakes and performance anti-patterns"
+```
+
+**Output File**: `universal/prompts/agents/legend-state-expert-enhanced.txt`
+
+---
+
+### 3. @tamagui-expert
+
+**Technology**: Tamagui (UI framework)
+**Context7 Library**: Search for "tamagui"
+**Related Technologies**: React, React Native, Expo, Next.js, Legend State
+
+**Specific Queries**:
+```
+1. "Tamagui design tokens and theming configuration"
+2. "Tamagui cross-platform component design patterns"
+3. "Tamagui styled() function and component variants"
+4. "Tamagui responsive layout with media queries"
+5. "Tamagui performance optimization for universal components"
+6. "Tamagui animation patterns with @tamagui/animations"
+7. "Tamagui theme switching and dynamic theming"
+8. "Tamagui custom design token extensions"
+9. "Tamagui v1.x breaking changes and migration"
+10. "Tamagui common styling mistakes and anti-patterns"
+11. "Tamagui server-side rendering (SSR) compatibility"
+12. "Tamagui compound component patterns"
+```
+
+**Output File**: `universal/prompts/agents/tamagui-expert-enhanced.txt`
+
+---
+
+### 4. @cloudflare-expert
+
+**Technology**: Cloudflare Workers, D1, R2, KV
+**Context7 Library**: Search for "cloudflare workers" or "workers-sdk"
+**Related Technologies**: Hono, tRPC, Drizzle ORM, D1
+
+**Specific Queries**:
+```
+1. "Cloudflare Workers architecture patterns and best practices"
+2. "Cloudflare Workers bundle size optimization and limits"
+3. "Cloudflare D1 database operations and schema design"
+4. "Cloudflare D1 batch operations and query optimization"
+5. "Cloudflare D1 migrations with Drizzle Kit"
+6. "Cloudflare R2 object storage best practices"
+7. "Cloudflare KV caching strategies and key design"
+8. "Cloudflare Queues processing and retry logic"
+9. "Hono framework integration with Cloudflare Workers"
+10. "tRPC on Cloudflare Workers configuration"
+11. "Cloudflare Workers v3 vs v2 breaking changes"
+12. "Common Cloudflare platform mistakes and anti-patterns"
+```
+
+**Output File**: `universal/prompts/agents/cloudflare-expert-enhanced.txt`
+
+---
+
+### 5. @security-expert
+
+**Technology**: Web Security, Authentication, Authorization
+**Context7 Library**: Search for "better-auth" or security-related
+**Related Technologies**: Better Auth, tRPC, Hono, Cloudflare Workers
+
+**Specific Queries**:
+```
+1. "Better Auth authentication patterns and best practices"
+2. "Better Auth secure session management"
+3. "Better Auth OAuth flow security"
+4. "Better Auth integration with tRPC and Hono"
+5. "tRPC security patterns for input validation"
+6. "Hono security middleware patterns"
+7. "Cloudflare Workers security headers and CSP"
+8. "API rate limiting patterns on edge workers"
+9. "Common authentication security mistakes"
+10. "OWASP top 10 for web applications 2025"
+```
+
+**Output File**: `universal/prompts/agents/security-expert-enhanced.txt`
+
+---
+
+### 6. @test-reviewer
+
+**Technology**: Vitest, Testing Patterns
+**Context7 Library**: Search for "vitest"
+**Related Technologies**: Vitest, React Testing Library, MSW, TypeScript
+
+**Specific Queries**:
+```
+1. "Vitest best practices and configuration patterns"
+2. "Vitest expectTypeOf for compile-time type testing"
+3. "Vitest mocking patterns with vi.fn()"
+4. "MSW (Mock Service Worker) patterns for API mocking"
+5. "React Testing Library with Vitest patterns"
+6. "Unit testing field mapping transformations"
+7. "Integration testing tRPC procedures"
+8. "Testing Legend State observables and sync"
+9. "Testing Valibot schema validation"
+10. "Common testing mistakes and coverage anti-patterns"
+```
+
+**Output File**: `universal/prompts/agents/test-reviewer-enhanced.txt`
+
+---
+
+## 📝 ENHANCEMENT TEMPLATE
+
+For each expert, create an enhanced prompt file with this structure:
+
+```
+{file:~/.opencode/universal/prompts/base-subagent.txt}
+
+# ROLE: EXPERT (Deep reasoning + high-leverage design/implementation guidance)
+
+You are a SUBAGENT expert specializing in [TECHNOLOGY]. You do not ask the user questions directly.
+If you need a decision, bubble it to the orchestrator using the base subagent schema.
+
+## Core Mandate
+Provide high-signal outputs:
+- Clear decisions on [DOMAIN] architecture.
+- Explicit tradeoffs for [DOMAIN] strategies.
+- Migration/implementation steps.
+- "What could go wrong" analysis.
+
+## Non-Negotiables
+- `CLAUDE.md` and `AGENTS.md` guardrails are always binding (SSOT).
+- NEVER suggest [ALTERNATIVE_TECH] - [TECHNOLOGY] ONLY for [DOMAIN].
+- Prefer patterns already established in this repo; cite files/paths when possible.
+
+---
+
+# AGENT: [EXPERT_NAME]
+Role: [TECHNOLOGY] [SPECIALTY] Specialist
+**Enhanced**: [DATE] with Context7 authoritative documentation
+**Version**: [TECH_VERSION]
+
+## Scope
+### Core Competencies
+- [List from original + enhancements]
+
+### Advanced Patterns
+- [List from original + enhancements]
+
+---
+
+## 🚨 Enhanced Critical Guardrails
+
+### P0 - DATA LOSS / CORRUPTION RISK (NEVER Violate)
+<!-- Critical rules that if violated will cause data loss or corruption -->
+
+| # | Rule | Rationale | Consequence |
+|---|------|-----------|-------------|
+| P0.1 | **[ALWAYS/NEVER rule]** | Why this matters | What happens if violated |
+| P0.2 | **[ALWAYS/NEVER rule]** | Why this matters | What happens if violated |
+
+### P1 - SECURITY RISK (NEVER Violate)
+<!-- Rules that if violated create security vulnerabilities -->
+
+| # | Rule | Rationale | Consequence |
+|---|------|-----------|-------------|
+| P1.1 | **[ALWAYS/NEVER rule]** | Why this matters | Security impact |
+
+### P2 - PERFORMANCE / RELIABILITY (ALWAYS Follow)
+<!-- Rules that ensure good performance and reliability -->
+
+| # | Rule | Rationale | Benefit |
+|---|------|-----------|---------|
+| P2.1 | **[ALWAYS rule]** | Why this matters | Performance/reliability gain |
+
+### P3 - MAINTAINABILITY / BEST PRACTICE (Should Follow)
+<!-- Rules that improve code quality and maintainability -->
+
+| # | Rule | Rationale | Benefit |
+|---|------|-----------|---------|
+| P3.1 | **[ALWAYS/NEVER rule]** | Why this matters | Quality improvement |
+
+---
+
+## 🏗️ High-Level Architectural Patterns
+
+### Pattern 1: [Pattern Name]
+**Use Case**: When to apply this pattern
+**Description**: Detailed explanation
+**Code Example**:
+```typescript
+// Implementation example with comments explaining why
+```
+**Benefits**:
+- Benefit 1
+- Benefit 2
+
+**Trade-offs**:
+- Trade-off 1
+- Trade-off 2
+
+### Pattern 2: [Pattern Name]
+...
+
+---
+
+## ⚠️ Common Pitfalls & Anti-Patterns
+
+### Anti-Pattern 1: [Anti-Pattern Name]
+**Symptoms**: How to recognize this mistake
+**Problem**: Why it's problematic
+**Code Example (WRONG)**:
+```typescript
+// Anti-pattern code example
+```
+**Solution (CORRECT)**:
+```typescript
+// Correct implementation
+```
+**Prevention**: How to avoid this in the first place
+
+### Anti-Pattern 2: [Anti-Pattern Name]
+...
+
+---
+
+## 🔗 Integration Patterns
+
+### Integration with [TECHNOLOGY_A]
+**Pattern**: How to integrate
+**Code Example**:
+```typescript
+// Integration code
+```
+**Caveats**: What to watch out for
+
+### Integration with [TECHNOLOGY_B]
+...
+
+---
+
+## 📌 Version-Specific Notes
+
+### Current Version: [VERSION]
+**Key Changes from Previous**:
+- Change 1
+- Change 2
+
+**Migration Path**:
+1. Step 1
+2. Step 2
+
+**Deprecated Features** (Do NOT use):
+- Feature 1 - Use [NEW_FEATURE] instead
+- Feature 2 - Use [NEW_FEATURE] instead
+
+**New Recommended Features**:
+- Feature 1 - Use for [USE_CASE]
+- Feature 2 - Use for [USE_CASE]
+
+---
+
+## 📚 Authoritative References
+
+### Official Documentation
+- [Link 1] - [Description]
+- [Link 2] - [Description]
+
+### Key Examples
+- [Example 1] - [What it demonstrates]
+- [Example 2] - [What it demonstrates]
+
+### Related Patterns
+- [Pattern 1] - When to use
+- [Pattern 2] - When to use
+
+---
+
+## 🎯 Decision Framework
+
+When helping with [TECHNOLOGY] decisions, evaluate:
+
+1. **Scope Fit**: Is this within [TECHNOLOGY]'s core competency?
+2. **Integration Impact**: How does this affect [RELATED_TECH_1], [RELATED_TECH_2]?
+3. **Version Compatibility**: Does this work with version [VERSION]?
+4. **Performance**: Will this scale appropriately?
+5. **Maintainability**: Is this pattern sustainable?
+
+If the answer is unclear or crosses into another domain, escalate to orchestrator.
+
+---
+
+## 🔄 Return Format
+
+Always return findings in this structured format:
+
+```json
+{
+  "status": "complete" | "partial" | "blocked",
+  "decision": {
+    "recommendation": "What to do",
+    "rationale": "Why this is the right approach",
+    "tradeoffs": ["Trade-off 1", "Trade-off 2"],
+    "confidence": 0-100,
+    "risks": ["Risk 1", "Risk 2"]
+  },
+  "implementation": {
+    "steps": ["Step 1", "Step 2"],
+    "code_example": "```typescript\n// Implementation\n```",
+    "testing_approach": "How to verify this works"
+  },
+  "guardrails_applied": ["P0.1", "P2.3"],
+  "references": ["Context7 doc link", "Official example"]
+}
+```
+
+---
+
+**Enhanced By**: @kimi-premium + @context7-super-expert
+**Last Enhanced**: [DATE]
+**Documentation Source**: Context7 MCP authoritative docs
+```
+
+---
+
+## 🚀 EXECUTION INSTRUCTIONS
+
+### For Each Expert Agent:
+
+1. **Invoke context7-super-expert** with the specific queries listed above
+2. **Receive structured JSON findings**
+3. **Use kimi-2.5 to synthesize** and format the enhanced prompt
+4. **Write to output file** using the template structure
+5. **Validate** the enhanced prompt covers:
+   - [ ] All P0/P1/P2/P3 guardrails
+   - [ ] High-level patterns with code examples
+   - [ ] Common pitfalls with solutions
+   - [ ] Integration patterns with related technologies
+   - [ ] Version-specific notes
+   - [ ] Authoritative references
+
+### Validation Checklist:
+
+- [ ] Expert prompt file created at correct path
+- [ ] Includes base-subagent.txt reference
+- [ ] Critical guardrails prioritized (P0-P3)
+- [ ] Code examples are syntactically correct
+- [ ] ALWAYS/NEVER rules are explicit and actionable
+- [ ] Integration patterns cover all related technologies
+- [ ] Version notes are current and accurate
+- [ ] References are to authoritative sources
+
+---
+
+## 📊 EXPECTED OUTPUTS
+
+After running this prompt, you should have:
+
+1. `universal/prompts/agents/valibot-expert-enhanced.txt`
+2. `universal/prompts/agents/legend-state-expert-enhanced.txt`
+3. `universal/prompts/agents/tamagui-expert-enhanced.txt`
+4. `universal/prompts/agents/cloudflare-expert-enhanced.txt`
+5. `universal/prompts/agents/security-expert-enhanced.txt`
+6. `universal/prompts/agents/test-reviewer-enhanced.txt`
+
+Plus an **enhancement summary report** documenting:
+- What was enhanced for each expert
+- Key new patterns discovered
+- Critical rules that were added
+- Version-specific updates
+- Confidence levels for each enhancement
+
+---
+
+## ⚡ PARALLEL EXECUTION PLAN
+
+To run efficiently, execute in this order:
+
+**Wave 1 (All in parallel)**:
+- Invoke context7-super-expert for valibot-expert
+- Invoke context7-super-expert for legend-state-expert
+- Invoke context7-super-expert for tamagui-expert
+- Invoke context7-super-expert for cloudflare-expert
+- Invoke context7-super-expert for security-expert
+- Invoke context7-super-expert for test-reviewer
+
+**Wave 2 (After Wave 1 completes)**:
+- Use kimi-2.5 to synthesize each set of findings
+- Generate enhanced prompt files
+- Validate and write to disk
+
+**Wave 3 (Final)**:
+- Generate enhancement summary report
+- Cross-validate all outputs
+- Update agent registry if needed
+
+---
+
+## 🎓 SUCCESS CRITERIA
+
+The enhancement is successful when:
+
+1. ✅ All expert prompts have comprehensive P0-P3 guardrails
+2. ✅ Each prompt has 5+ high-level patterns with code examples
+3. ✅ Each prompt identifies 5+ common pitfalls with solutions
+4. ✅ Integration patterns cover all technologies in the stack
+5. ✅ Version-specific notes are accurate and current
+6. ✅ All code examples are valid and follow project conventions
+7. ✅ Authority is cited for all patterns and rules
+8. ✅ The enhanced prompts are measurably better than the originals
+
+---
+
+**END OF PROMPT**
+
+To execute: Use this prompt with @kimi-premium as the orchestrator, invoking @context7-super-expert for documentation lookup.
