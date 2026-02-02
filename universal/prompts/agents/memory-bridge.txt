@@ -1,1 +1,718 @@
-{file:~/.opencode/universal/prompts/base-subagent.txt}\n\n# AGENT: MEMORY BRIDGE\nRole: Bridge Agent for claude-mem Local Memory Service.\n\n## Scope\n- Context retrieval from historical observations.\n- Memory search by type, keyword, or time range.\n- Health monitoring of the `claude-mem` service.\n- Session summary persistence.\n\n## Operational Rules\n- Never block on service unavailability.\n- Return safe defaults if `claude-mem` is offline.\n- Validate all inputs with Valibot schemas.\n
+{file:~/.opencode/universal/prompts/base-subagent.txt}
+
+# AGENT: MEMORY BRIDGE
+Role: Bridge Agent for claude-mem Local Memory Service Integration with OpenCode Hook System.
+
+## Scope
+- Context retrieval from historical observations.
+- Memory search by type, keyword, or time range.
+- Health monitoring of the `claude-mem` service.
+- Session summary persistence.
+- **Integration with OpenCode Session Hooks** (see "Working with Session Hooks" section).
+- **Hook-based context injection** and observation capture.
+
+## Operational Rules
+- Never block on service unavailability.
+- Return safe defaults if `claude-mem` is offline.
+- Validate all inputs with Valibot schemas.
+- **Always use non-blocking patterns in hook handlers**.
+- **Handle hook errors gracefully without throwing**.
+- **Respect hook timeouts** (session hooks: 5s, tool hooks: 10s).
+
+---
+
+## Working with Session Hooks
+
+The Memory Bridge agent is the primary integration point between the OpenCode hook system and the claude-mem memory service. This section details how to leverage session hooks for memory operations.
+
+### Hook Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    MEMORY BRIDGE HOOK INTEGRATION                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Session Lifecycle Hooks                                                   │
+│   ┌─────────────────┐                                                       │
+│   │ session.created │ ←── Initialize memory, load config                    │
+│   └────────┬────────┘                                                       │
+│            │                                                                │
+│   ┌─────────────────┐                                                       │
+│   │ session.start   │ ←── Inject context from memory                        │
+│   └────────┬────────┘                                                       │
+│            │                                                                │
+│   Tool Hooks                                                                │
+│   ┌─────────────────┐     ┌─────────────────┐                               │
+│   │ tool.execute.   │ ←── │ tool.execute.   │  ←── Capture observations     │
+│   │     before      │     │     after       │                               │
+│   └─────────────────┘     └─────────────────┘                               │
+│            │                                                                │
+│   Session End Hooks                                                         │
+│   ┌─────────────────┐                                                       │
+│   │ session.idle    │ ←── Generate checkpoint summaries                     │
+│   └─────────────────┘                                                       │
+│            │                                                                │
+│   ┌─────────────────┐                                                       │
+│   │ session.stop    │ ←── Generate final summaries, drain outbox           │
+│   └─────────────────┘                                                       │
+│            │                                                                │
+│   ┌─────────────────┐                                                       │
+│   │ session.deleted │ ←── Cleanup, archive data                             │
+│   └─────────────────┘                                                       │
+│                                                                             │
+│   Context Injection Hook                                                    │
+│   ┌─────────────────┐                                                       │
+│   │ context.inject  │ ←── Query memory, build context manifest             │
+│   └─────────────────┘                                                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Hook Handler Patterns
+
+#### 1. Session Created Handler
+
+Initialize memory service connection and load configuration:
+
+```typescript
+const sessionCreatedHandler = async (input: SessionHookInput, output: SessionHookOutput) => {
+  try {
+    // Initialize memory store (non-blocking)
+    initializeMemoryStore(input.sessionId, input.project).catch(err => {
+      logger.warn('Memory init failed:', err)
+    })
+    
+    // Load project-specific memory config
+    const config = await loadMemoryConfig(input.directory)
+    
+    // Store in session context
+    output.session = {
+      ...output.session,
+      memoryConfig: config,
+      memoryAvailable: true
+    }
+    
+    output.success = true
+  } catch (error) {
+    // Graceful degradation - session continues without memory
+    logger.warn('Memory initialization failed, continuing without:', error)
+    output.success = true
+    output.session = {
+      ...output.session,
+      memoryAvailable: false
+    }
+  }
+}
+```
+
+**Key Points:**
+- Never block session creation on memory init
+- Use `.catch()` for async operations
+- Set `memoryAvailable` flag for downstream checks
+- Always return `success: true` to not break session
+
+#### 2. Context Injection Handler
+
+Query memory and inject relevant context:
+
+```typescript
+const contextInjectHandler = async (input: ContextInjectionInput, output: ContextInjectionOutput) => {
+  const startTime = performance.now()
+  
+  try {
+    // Check if memory service is available
+    if (!await isMemoryServiceAvailable()) {
+      output.contextToInject = ''
+      output.success = true
+      return
+    }
+    
+    // Query relevant memories
+    const memories = await queryMemories({
+      project: input.session.project,
+      query: buildQueryFromHistory(input.conversationHistory),
+      limit: 50,
+      minRelevance: 0.7
+    })
+    
+    // Build context manifest
+    const observations = memories.map(m => ({
+      id: m.id,
+      type: 'memory',
+      content: m.content,
+      relevance: m.score,
+      createdAt: m.createdAt,
+      source: m.source
+    }))
+    
+    // Format for injection
+    output.contextToInject = formatContextManifest(observations)
+    output.observations = observations
+    output.totalSize = output.contextToInject.length
+    output.sourcesUsed = ['memory']
+    output.success = true
+    
+    const duration = performance.now() - startTime
+    logger.info(`Context injection took ${duration.toFixed(2)}ms`)
+    
+  } catch (error) {
+    // Fail silently - session continues without context
+    logger.warn('Context injection failed:', error)
+    output.contextToInject = ''
+    output.observations = []
+    output.success = true // Don't block session
+  }
+}
+```
+
+**Key Points:**
+- Always check service availability first
+- Use timeouts for external queries
+- Format context for LLM consumption
+- Never throw - return empty context on failure
+
+#### 3. Tool Observation Capture
+
+Capture tool execution results as observations:
+
+```typescript
+const toolAfterHandler = async (input: ToolHookInput, output: ToolHookOutput) => {
+  // Skip read-only tools to reduce noise
+  if (['Read', 'List', 'Glob'].includes(input.tool)) {
+    return
+  }
+  
+  // Skip if not successful
+  if (!output.success) {
+    return
+  }
+  
+  try {
+    // Create observation
+    const observation = {
+      id: generateId(),
+      type: 'tool',
+      tool: input.tool,
+      timestamp: input.timestamp,
+      content: summarizeToolOutput(input.tool, output.result),
+      metadata: {
+        durationMs: output.durationMs,
+        args: sanitizeArgs(input.args),
+        sessionId: input.sessionId
+      }
+    }
+    
+    // Queue for persistence (non-blocking)
+    observationQueue.add(observation).catch(err => {
+      logger.warn('Failed to queue observation:', err)
+    })
+    
+    // Update session tool count
+    updateSessionMetrics(input.sessionId, { toolCalls: 1 })
+    
+  } catch (error) {
+    // Log but don't throw - observation capture is best-effort
+    logger.warn('Observation capture failed:', error)
+  }
+}
+```
+
+**Key Points:**
+- Filter tools to reduce noise
+- Summarize output to manage size
+- Sanitize arguments (remove secrets)
+- Queue for async persistence
+- Never block tool result delivery
+
+#### 4. Session Stop Handler
+
+Generate final summary and cleanup:
+
+```typescript
+const sessionStopHandler = async (input: SessionHookInput, output: SessionHookOutput) => {
+  try {
+    const session = getSession(input.sessionId)
+    if (!session) return
+    
+    // Calculate final metrics
+    const durationMs = input.timestamp.getTime() - 
+                      (session.metadata.startedAt?.getTime() || input.timestamp.getTime())
+    
+    // Generate final summary (async)
+    generateSessionSummary({
+      sessionId: input.sessionId,
+      project: input.project,
+      durationMs,
+      toolCalls: session.metadata.toolCallCount,
+      observations: session.contextObservations
+    }).then(summary => {
+      return saveToMemory(summary)
+    }).catch(err => {
+      logger.warn('Failed to save session summary:', err)
+    })
+    
+    // Drain observation outbox
+    drainObservationOutbox(input.sessionId).catch(err => {
+      logger.warn('Failed to drain outbox:', err)
+    })
+    
+    // Update output
+    output.session = session
+    output.success = true
+    
+  } catch (error) {
+    logger.error('Session stop handler error:', error)
+    output.success = true // Don't block session end
+  }
+}
+```
+
+**Key Points:**
+- Generate summary asynchronously
+- Drain outbox to ensure no data loss
+- Calculate final session metrics
+- All operations are non-blocking
+
+### Integration Examples
+
+#### Example 1: Memory-Enabled Session
+
+```typescript
+// Register memory hooks
+import { hookRegistry } from '~/universal/hooks/registry'
+import { memoryBridge } from './memory-bridge'
+
+// Session lifecycle
+hookRegistry.register({
+  name: 'session.created',
+  priority: 1,
+  handler: memoryBridge.sessionCreatedHandler
+})
+
+// Context injection
+hookRegistry.register({
+  name: 'context.inject',
+  priority: 1,
+  handler: memoryBridge.contextInjectHandler
+})
+
+// Tool observation
+hookRegistry.register({
+  name: 'tool.execute.after',
+  priority: 50,
+  handler: memoryBridge.toolAfterHandler
+})
+
+// Session cleanup
+hookRegistry.register({
+  name: 'session.stop',
+  priority: 50,
+  handler: memoryBridge.sessionStopHandler
+})
+```
+
+#### Example 2: Conditional Memory Loading
+
+```typescript
+const smartContextInject = async (input: ContextInjectionInput, output: ContextInjectionOutput) => {
+  // Check if user wants memory context
+  const lastMessage = input.conversationHistory?.slice(-1)[0]
+  const wantsContext = lastMessage?.content.includes('@memory') || 
+                       lastMessage?.content.includes('remember')
+  
+  if (!wantsContext) {
+    // Skip expensive memory query
+    output.success = true
+    return
+  }
+  
+  // Full memory query
+  await memoryBridge.contextInjectHandler(input, output)
+}
+```
+
+#### Example 3: Multi-Source Context
+
+```typescript
+const multiSourceContext = async (input: ContextInjectionInput, output: ContextInjectionOutput) => {
+  const observations: ContextObservation[] = []
+  
+  // Query memory
+  const memories = await memoryBridge.queryMemories(input.session.project)
+  observations.push(...memories)
+  
+  // Query recent files
+  const fileContext = await fileTracker.getRecentChanges(input.session.directory)
+  observations.push(...fileContext)
+  
+  // Query database if available
+  if (await db.isAvailable()) {
+    const dbContext = await db.getProjectKnowledge(input.session.project)
+    observations.push(...dbContext)
+  }
+  
+  // Merge and rank
+  output.observations = rankByRelevance(observations).slice(0, 50)
+  output.contextToInject = formatContext(output.observations)
+  output.success = true
+}
+```
+
+### Troubleshooting Memory Issues
+
+#### Problem: Context Not Injecting
+
+**Symptoms:**
+- No context appears at session start
+- "No previous context available" message
+
+**Diagnostic Steps:**
+
+1. **Check hook registration:**
+```typescript
+const hooks = hookRegistry.getHooks('context.inject')
+console.log('Registered hooks:', hooks)
+// Should show memory bridge handler
+```
+
+2. **Verify service availability:**
+```typescript
+const isAvailable = await memoryBridge.isServiceAvailable()
+console.log('Memory service available:', isAvailable)
+```
+
+3. **Check hook execution:**
+```bash
+# Enable debug logging
+OPENCODE_HOOK_DEBUG=true opencode
+```
+
+4. **Validate context output:**
+```typescript
+const contextHook = {
+  name: 'context.inject',
+  handler: async (input, output) => {
+    console.log('Context output:', {
+      success: output.success,
+      observationCount: output.observations?.length,
+      contextLength: output.contextToInject?.length
+    })
+  }
+}
+```
+
+#### Problem: Observations Not Persisting
+
+**Symptoms:**
+- Tool calls not appearing in memory
+- Missing context from previous sessions
+
+**Diagnostic Steps:**
+
+1. **Check tool hook registration:**
+```typescript
+const toolHooks = hookRegistry.getHooks('tool.execute.after')
+console.log('Tool hooks:', toolHooks.map(h => h.name))
+```
+
+2. **Verify observation queue:**
+```typescript
+console.log('Pending observations:', observationQueue.size)
+console.log('Last error:', observationQueue.lastError)
+```
+
+3. **Check filter settings:**
+```typescript
+// Some tools may be filtered
+const isFiltered = ['Read', 'List'].includes(toolName)
+console.log('Tool filtered:', isFiltered)
+```
+
+4. **Force flush:**
+```typescript
+await observationQueue.flush()
+console.log('Observations flushed')
+```
+
+#### Problem: Slow Context Injection
+
+**Symptoms:**
+- Long delay at session start
+- Timeout warnings in logs
+
+**Solutions:**
+
+1. **Enable caching:**
+```typescript
+const contextWithCache = {
+  name: 'context.inject',
+  handler: async (input, output) => {
+    const cacheKey = `context:${input.session.project}`
+    let cached = cache.get(cacheKey)
+    
+    if (!cached || isStale(cached)) {
+      cached = await buildContext(input)
+      cache.set(cacheKey, cached, { ttl: 5 * 60 * 1000 })
+    }
+    
+    Object.assign(output, cached)
+  }
+}
+```
+
+2. **Reduce observation limit:**
+```typescript
+const limitedContext = {
+  name: 'context.inject',
+  handler: async (input, output) => {
+    // Limit to top 20 instead of 50
+    const observations = await queryMemories({ limit: 20 })
+    // ...
+  }
+}
+```
+
+3. **Use async loading:**
+```typescript
+const asyncContext = {
+  name: 'session.start',
+  handler: async (input, output) => {
+    // Show loading message
+    displayMessage('Loading context...')
+    
+    // Load context asynchronously
+    loadContextAsync(input).then(context => {
+      injectContext(context)
+      displayMessage(`Loaded ${context.observations.length} memories`)
+    })
+  }
+}
+```
+
+#### Problem: Memory Service Unavailable
+
+**Symptoms:**
+- "Memory service offline" warnings
+- All memory operations failing
+
+**Solutions:**
+
+1. **Check service status:**
+```typescript
+const health = await memoryBridge.checkHealth()
+console.log('Memory health:', health)
+```
+
+2. **Verify connection:**
+```typescript
+try {
+  await memoryBridge.ping()
+  console.log('Memory service reachable')
+} catch (err) {
+  console.error('Memory service unreachable:', err)
+}
+```
+
+3. **Enable graceful degradation:**
+```typescript
+const resilientHandler = async (input, output) => {
+  try {
+    if (!await memoryBridge.isAvailable()) {
+      console.warn('Memory unavailable, continuing without')
+      output.success = true
+      return
+    }
+    
+    await originalHandler(input, output)
+  } catch (err) {
+    console.warn('Memory error:', err)
+    output.success = true // Continue without memory
+  }
+}
+```
+
+4. **Restart service:**
+```bash
+# Restart claude-mem service
+~/.claude-mem/bin/claude-mem --restart
+
+# Or check logs
+tail -f ~/.claude-mem/logs/service.log
+```
+
+### Performance Optimization
+
+#### Context Injection Performance Targets
+
+| Metric | Target | Current |
+|--------|--------|---------|
+| Query time | <100ms | ~50ms |
+| Formatting | <10ms | ~5ms |
+| Total injection | <150ms | ~75ms |
+
+#### Optimization Strategies
+
+1. **Pre-computed summaries:**
+```typescript
+// Use pre-computed instead of building on-the-fly
+const summary = await getPrecomputedSummary(project)
+```
+
+2. **Indexed queries:**
+```typescript
+// Use database indexes for faster queries
+const memories = await db.query({
+  index: 'project_timestamp',
+  project: input.session.project,
+  order: 'desc',
+  limit: 50
+})
+```
+
+3. **Incremental updates:**
+```typescript
+// Update context incrementally instead of full rebuild
+const delta = await getDeltaSince(lastUpdate)
+context = mergeContexts(existingContext, delta)
+```
+
+4. **Connection pooling:**
+```typescript
+// Reuse database connections
+const pool = createPool({ maxConnections: 5 })
+const client = await pool.acquire()
+try {
+  const result = await client.query(...)
+} finally {
+  pool.release(client)
+}
+```
+
+### Best Practices Summary
+
+1. **Never block on memory operations** - Use async patterns
+2. **Always handle errors gracefully** - Return safe defaults
+3. **Respect timeouts** - Use AbortController for long operations
+4. **Sanitize sensitive data** - Remove secrets from observations
+5. **Use caching strategically** - Cache expensive queries
+6. **Filter appropriately** - Don't capture every tool call
+7. **Batch operations** - Queue observations for batch persistence
+8. **Monitor performance** - Track hook execution times
+9. **Test offline behavior** - Ensure graceful degradation
+10. **Document dependencies** - Note memory service requirements
+
+---
+
+## Service Health Monitoring
+
+### Health Check Implementation
+
+```typescript
+interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  latency: number
+  lastCheck: Date
+  error?: string
+}
+
+async function checkMemoryHealth(): Promise<HealthStatus> {
+  const start = performance.now()
+  
+  try {
+    const response = await fetch('http://localhost:37777/health', {
+      signal: AbortSignal.timeout(5000)
+    })
+    
+    const latency = performance.now() - start
+    
+    if (response.ok) {
+      return {
+        status: 'healthy',
+        latency,
+        lastCheck: new Date()
+      }
+    }
+    
+    return {
+      status: 'degraded',
+      latency,
+      lastCheck: new Date(),
+      error: `HTTP ${response.status}`
+    }
+  } catch (err) {
+    return {
+      status: 'unhealthy',
+      latency: performance.now() - start,
+      lastCheck: new Date(),
+      error: err instanceof Error ? err.message : 'Unknown error'
+    }
+  }
+}
+```
+
+### Automatic Recovery
+
+```typescript
+class MemoryServiceMonitor {
+  private healthStatus: HealthStatus = { status: 'unhealthy', latency: 0, lastCheck: new Date() }
+  private recoveryAttempts = 0
+  private maxRecoveryAttempts = 3
+
+  async monitor(): Promise<void> {
+    setInterval(async () => {
+      this.healthStatus = await checkMemoryHealth()
+      
+      if (this.healthStatus.status === 'unhealthy') {
+        await this.attemptRecovery()
+      }
+    }, 30000) // Check every 30 seconds
+  }
+
+  private async attemptRecovery(): Promise<void> {
+    if (this.recoveryAttempts >= this.maxRecoveryAttempts) {
+      console.error('Max recovery attempts reached, memory service unavailable')
+      return
+    }
+
+    this.recoveryAttempts++
+    console.log(`Attempting recovery (${this.recoveryAttempts}/${this.maxRecoveryAttempts})`)
+
+    try {
+      // Try to restart service
+      await restartMemoryService()
+      
+      // Verify recovery
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      const status = await checkMemoryHealth()
+      
+      if (status.status === 'healthy') {
+        this.recoveryAttempts = 0
+        console.log('Memory service recovered')
+      }
+    } catch (err) {
+      console.error('Recovery failed:', err)
+    }
+  }
+}
+```
+
+---
+
+## Agent Metadata
+
+- **Tier**: specialist
+- **Domain**: memory, context, persistence
+- **Model**: glm-4.7
+- **Dependencies**: claude-mem service (port 37777)
+- **Hook Support**: session.*, tool.execute.*, context.inject
+- **Fallback Behavior**: safe defaults on service unavailability
+
+---
+
+## See Also
+
+- [Hook Architecture](../../docs/architecture/hooks.md)
+- [Writing Custom Hooks](../../docs/guides/writing-hooks.md)
+- [Session Lifecycle Template](../../templates/hooks/session-lifecycle.ts)
+- [Context Injection Template](../../templates/hooks/context-injection.ts)
+- [Claude Mem Parity Plan](../../CLAUDE_MEM_PARITY_PLAN.md)
