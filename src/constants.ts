@@ -131,18 +131,51 @@ export const SUMMARY_CACHE_TTL_MS = 5 * 60 * 1000;
 /**
  * Maximum token budget for subagent Deep Memory.
  * 
- * **Why 1500?** Subagents should focus on their task, not history.
- * This budget allows ~3-5 relevant observations without bloat.
+ * **Why 3500?** Aligned with official Claude Mem standards.
+ * Supports 50 observations with progressive disclosure (5 full + 45 index)
+ * plus 10 session summaries for rich context injection.
+ * 
+ * @see docs/CLAUDE_MEM_IMPLEMENTATION_COMPARISON.md
  */
-export const SUBAGENT_MEMORY_TOKEN_BUDGET = 1500;
+export const SUBAGENT_MEMORY_TOKEN_BUDGET = 3500;
 
 /**
  * Maximum observations in a Context Manifest.
  * 
- * **Why 20?** Balances comprehensiveness with manifest size.
- * Planner can always query for more if needed.
+ * **Why 50?** Matches official Claude Mem standard for context injection.
+ * Fetches last 50 observations across last 10 sessions.
+ * 
+ * @see docs/CLAUDE_MEM_OFFICIAL_REFERENCE.md
  */
-export const MANIFEST_MAX_OBSERVATIONS = 20;
+export const MANIFEST_MAX_OBSERVATIONS = 50;
+
+/**
+ * Number of observations to show with full details (progressive disclosure).
+ * 
+ * **Why 5?** Official Claude Mem uses progressive disclosure:
+ * - Top 5 observations: Full narrative/facts (~1,500 tokens)
+ * - Remaining 45: Compact index table (~800 tokens)
+ * This saves ~60% tokens vs showing all 50 with full details.
+ * 
+ * @see docs/CLAUDE_MEM_IMPLEMENTATION_COMPARISON.md
+ */
+export const CONTEXT_FULL_COUNT = 5;
+
+/**
+ * Maximum number of sessions to query for context injection.
+ * 
+ * **Why 10?** Official Claude Mem standard - pulls observations
+ * from last 10 sessions for continuity.
+ */
+export const CONTEXT_SESSION_COUNT = 10;
+
+/**
+ * Maximum session summaries to include in context injection.
+ * 
+ * **Why 10?** Official Claude Mem standard for session summaries.
+ * Provides high-level context across recent sessions.
+ */
+export const MAX_SESSION_SUMMARIES = 10;
 
 /**
  * Critical observation types that are always fully loaded.

@@ -300,6 +300,11 @@ function generateSessionId(): string {
 
 /**
  * Fetch context from claude-mem for the current project
+ * 
+ * Aligned with official Claude Mem standards:
+ * - 50 observations (MANIFEST_MAX_OBSERVATIONS)
+ * - 10 session summaries (MAX_SESSION_SUMMARIES)
+ * - Progressive disclosure: 5 full details + 45 compact index
  */
 async function fetchContext(project: string, limit: number = 50): Promise<string | null> {
   try {

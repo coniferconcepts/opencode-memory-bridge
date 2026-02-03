@@ -16,10 +16,19 @@ import { scrubData } from './scrubber.js';
 
 /**
  * Configuration constants for session summarization
+ * 
+ * Aligned with official Claude Mem standards:
+ * - 50 observations for comprehensive context
+ * - 10 session summaries for continuity
+ * 
+ * @see docs/CLAUDE_MEM_OFFICIAL_REFERENCE.md
  */
 const SUMMARY_CONFIG = {
-  /** Maximum number of recent observations to include in prompt */
-  OBSERVATION_LIMIT: 20,
+  /** 
+   * Maximum number of recent observations to include in prompt
+   * Aligned with official Claude Mem: 50 observations
+   */
+  OBSERVATION_LIMIT: 50,
   /** Narrative preview length for prompt inclusion */
   NARRATIVE_PREVIEW_LENGTH: 200,
   /** Maximum number of files to preview in prompt */
